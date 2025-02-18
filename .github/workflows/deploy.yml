@@ -1,0 +1,22 @@
+name: Deploy para GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: Deploy para GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: .  # Como não há build, publique os arquivos diretamente
+          target-folder: ${{ github.ref_name }}  # Separa /main/ e /dev/
