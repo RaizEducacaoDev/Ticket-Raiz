@@ -1,0 +1,144 @@
+/* Criar um container fixo para os alertas */
+.alert-container {
+	box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4);
+	position: fixed;
+	top: 10%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 40%;
+	max-width: 40%;
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+/* Estilização base dos alerts */
+/* Animação do alerta com box-shadow */
+.custom-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.5s ease;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4); /* Padrão inicial */
+}
+
+.custom-alert.show {
+    opacity: 1;
+    transform: translateY(0);
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4); /* Mantém a sombra ao mostrar */
+}
+
+.custom-alert.fade-out {
+    opacity: 0;
+    transform: translateY(-20px);
+    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0); /* Reduz gradualmente a sombra */
+}
+
+/* Ícone do alerta */
+.custom-alert .alert-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+}
+
+/* Botão de fechar */
+.custom-alert .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+}
+
+.custom-alert .close-btn:hover {
+    opacity: 0.7;
+}
+
+/* Texto do alerta */
+.custom-alert .alert-content {
+    flex-grow: 1;
+}
+
+.custom-alert .alert-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+/* Cores dos alerts - Inspirados no Bootstrap */
+.alert-primary { background-color: #cfe2ff; color: #084298; border-color: #b6d4fe; }
+.alert-secondary { background-color: #e2e3e5; color: #41464b; border-color: #d6d8db; }
+.alert-success { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; }
+.alert-danger { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; }
+.alert-warning { background-color: #fff3cd; color: #664d03; border-color: #ffecb5; }
+.alert-info { background-color: #cff4fc; color: #055160; border-color: #b6effb; }
+.alert-light { background-color: #fefefe; color: #636464; border-color: #f8f9fa; }
+.alert-dark { background-color: #d3d3d4; color: #141619; border-color: #bcbebf; }
+
+.card-body {
+    position: relative;
+    padding: 20px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    animation: growFromCenter 1s ease-in-out forwards;
+    transition: all 0.3s ease;
+}
+
+.card-body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://i.postimg.cc/c18WVWQB/Logo-raiz-cor.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+#containerButton {
+    position: fixed;
+    bottom: 0;
+    width: -webkit-fill-available;
+    z-index: 94;
+}
+
+@keyframes growFromCenter {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+#userAuthorizationBox {
+	display: none!important;
+}
+
+@media (min-width: 768px) {
+    .nav-item.template-expand-show.d-lg-none {
+        display: none !important;
+    }
+}
