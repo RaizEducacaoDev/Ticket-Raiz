@@ -2,14 +2,6 @@ jq(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
 
-  jq('.task-check-action').change(function () {
-    if (jq('#userEmail').val() == 'antonio.silva@raizeducacao.com.br') {
-      const isChecked = jq('.task-check-action:checked').length > 0;
-      alternarIntervalosETimeouts(isChecked);
-      isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
-    }
-  });
-
   addActionRow();
 
   const updateText = (selector, original, updated) => {
@@ -54,11 +46,23 @@ jq(document).ready(function () {
 
       jq('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
+      var aprovadores = [1886, 1890, 1885, 1889]
+      var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
+    
+      jq('.task-check-action').change(function () {
+        if (aprovadores.includes(usuarioLogado)) {
+          const isChecked = jq('.task-check-action:checked').length > 0;
+          alternarIntervalosETimeouts(isChecked);
+          isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
+        }
+      });
+
       jq('#checkbox-header').change(function () {
         const isChecked = jq(this).prop('checked');
         jq('.task-check-action').prop('checked', isChecked);
-        alternarIntervalosETimeouts(isChecked);
-        if (jq('#userEmail').val() == 'antonio.silva@raizeducacao.com.br') {
+        if (aprovadores.includes(usuarioLogado)) {
+          const isChecked = jq('.task-check-action:checked').length > 0;
+          alternarIntervalosETimeouts(isChecked);
           isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
         }
       });
@@ -124,8 +128,11 @@ jq(document).ready(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
 
+            var aprovadores = [1886, 1890, 1885, 1889]
+            var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
+
             jq('.task-check-action').change(function () {
-              if (jq('#userEmail').val() == 'antonio.silva@raizeducacao.com.br') {
+              if (aprovadores.includes(usuarioLogado)) {
                 const isChecked = jq('.task-check-action:checked').length > 0;
                 alternarIntervalosETimeouts(isChecked);
                 isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
@@ -220,10 +227,10 @@ async function validaPendencias() {
 function movimentaTarefas(decisao) {
   try {
     jq(".app-overlay").show();
-    
+
     let successTasks = [];
     let failedTasks = [];
-  
+
     const tasks = jq('table tbody tr').map(function () {
       const checkbox = jq(this).find('.task-check-action');
       if (checkbox.prop('checked')) {
@@ -233,7 +240,7 @@ function movimentaTarefas(decisao) {
       }
       return null;
     }).get().filter(task => task !== null);
-  
+
     for (let i = 0; i < tasks.length; i++) {
       if (decisao) {
         var response = processaMovimentacao(tasks[i].taskNumber, "1", "Aprovado em lote");
@@ -243,16 +250,16 @@ function movimentaTarefas(decisao) {
         response ? failedTasks.push(tasks[i].taskId) : successTasks.push(tasks[i].taskId);
       }
     }
-  
+
     const successCount = successTasks.length;
     const failureCount = failedTasks.length;
-  
+
     if (successCount > 0 && failureCount === 0) {
-      mostrarModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function() {window.location.reload();});
+      mostrarModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
     } else if (successCount === 0 && failureCount > 0) {
-      mostrarModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br<br>!`, function() {window.location.reload();});
+      mostrarModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br<br>!`, function () { window.location.reload(); });
     } else if (successCount > 0 && failureCount > 0) {
-      mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br!`, function() {window.location.reload();});
+      mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br!`, function () { window.location.reload(); });
     }
 
     jq(".app-overlay").hide();
