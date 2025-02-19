@@ -227,7 +227,7 @@ async function validaPendencias() {
   }
 }
 
-function movimentaTarefas(decisao) {
+async function movimentaTarefas(decisao) {
   try {
     jq(".app-overlay").show();
 
@@ -245,13 +245,14 @@ function movimentaTarefas(decisao) {
     }).get().filter(task => task !== null);
 
     for (let i = 0; i < tasks.length; i++) {
+      let response;
       if (decisao) {
-        var response = processaMovimentacao(tasks[i].taskNumber, "1", "Aprovado");
-        response ? successTasks.push(tasks[i].taskId) : failedTasks.push(tasks[i].taskId);
+        response = await processaMovimentacao(tasks[i].taskNumber, "1", "Aprovado");
       } else {
-        var response = processaMovimentacao(tasks[i].taskNumber, "2", "Reprovado");
-        response ? failedTasks.push(tasks[i].taskId) : successTasks.push(tasks[i].taskId);
+        response = await processaMovimentacao(tasks[i].taskNumber, "2", "Reprovado");
       }
+
+      response ? successTasks.push(tasks[i].taskId) : failedTasks.push(tasks[i].taskId);
     }
 
     const successCount = successTasks.length;
@@ -270,45 +271,44 @@ function movimentaTarefas(decisao) {
     console.error("Erro ao processar tarefa:", error);
     jq(".app-overlay").hide();
   }
-  jq(".app-overlay").hide();
 }
 
 async function processaMovimentacao(id, result, reason) {
   try {
-    await jq.ajax({
+    const token = await buscaToken();  // Aguardar o token antes de enviar a requisição
+
+    const response = await jq.ajax({
       url: `${window.location.origin}/api/2/assignments/${id}`,
       method: "PUT",
       headers: {
-        "Authorization": `Bearer ${buscaToken()}`, // Adiciona o token Bearer
-        "Content-Type": "application/json" // Garante que a requisição seja interpretada corretamente
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
       data: { result, reason }
-    }).done(response => {
-      return response;
-    }).fail(error => {
-      console.error(`Erro ao processar tarefa:`, error);
     });
+
+    return response;
   } catch (error) {
     console.error(`Erro ao processar tarefa:`, error);
+    return null;  // Retorna null em caso de erro
   }
 }
 
 async function buscaToken() {
   try {
-    var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
-    await jq.ajax({
+    var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/));
+    const response = await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
-    }).done(response => {
-      // Retorna o temporaryToken do objeto "impersonate"
-      return response.impersonate.temporaryToken;
-    }).fail(error => {
-      console.error("Erro ao processar tarefa:", error);
     });
+
+    return response.impersonate.temporaryToken;  // Retorna o token
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
+    return null;  // Retorna null caso ocorra erro
   }
 }
+
 
 
 function applyDNoneForMobile() {
