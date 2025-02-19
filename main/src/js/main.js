@@ -300,6 +300,10 @@ async function buscaToken() {
     const response = await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
+      headers: {
+        "Authorization": `Bearer MvZD%2FXgtXKbB1zkeZhCkZnIoc4Zrfl0s8vqrgt5Ygi%2FYlwqRdWUBITOHgffLH79tICKQTWHarb7m3QfoujPZyf%2FUffb7ih1gaFqvf2LMBPEw7RaQZaH4wnKnmP15tgy5s%2Fetv6lmuUUxGhCJ3ERkRA%3D%3D`,
+        "Content-Type": "application/json"
+      },
     });
 
     return response.impersonate.temporaryToken;  // Retorna o token
