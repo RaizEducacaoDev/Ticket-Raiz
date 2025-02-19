@@ -2,8 +2,10 @@ jq(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
 
-  if(localStorage.chkReload == "1") {
-    localStorage.setItem('chkReload', '')
+  if (!localStorage.getItem('chkReload')) {
+    localStorage.setItem('chkReload', '');
+  } else if (localStorage.getItem('chkReload') === "1") {
+    localStorage.setItem('chkReload', '');
   }
 
   addActionRow();
