@@ -2,6 +2,10 @@ jq(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
 
+  if(localStorage.chkReload == "1") {
+    localStorage.setItem('chkReload', '')
+  }
+
   addActionRow();
 
   const updateText = (selector, original, updated) => {
@@ -46,13 +50,12 @@ jq(document).ready(function () {
 
       jq('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
-      var aprovadores = [1886, 1890, 1885, 1889]
+      var aprovadores = [1886, 1890, 1885, 1889, 4097, 2075, 2076, 2077, 2078, 1891, 1892, 4063, 1894, 2083, 1895, 1896, 1893, 1897, 2079, 2080, 2081, 2084, 2085, 2086, 2087, 2088, 4101]
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
     
       jq('.task-check-action').change(function () {
         if (aprovadores.includes(usuarioLogado)) {
           const isChecked = jq('.task-check-action:checked').length > 0;
-          alternarIntervalosETimeouts(isChecked);
           isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
         }
       });
@@ -62,7 +65,6 @@ jq(document).ready(function () {
         jq('.task-check-action').prop('checked', isChecked);
         if (aprovadores.includes(usuarioLogado)) {
           const isChecked = jq('.task-check-action:checked').length > 0;
-          alternarIntervalosETimeouts(isChecked);
           isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
         }
       });
@@ -134,7 +136,6 @@ jq(document).ready(function () {
             jq('.task-check-action').change(function () {
               if (aprovadores.includes(usuarioLogado)) {
                 const isChecked = jq('.task-check-action:checked').length > 0;
-                alternarIntervalosETimeouts(isChecked);
                 isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
               }
             });
@@ -243,10 +244,10 @@ function movimentaTarefas(decisao) {
 
     for (let i = 0; i < tasks.length; i++) {
       if (decisao) {
-        var response = processaMovimentacao(tasks[i].taskNumber, "1", "Aprovado em lote");
+        var response = processaMovimentacao(tasks[i].taskNumber, "1", "Aprovado");
         response ? successTasks.push(tasks[i].taskId) : failedTasks.push(tasks[i].taskId);
       } else {
-        var response = processaMovimentacao(tasks[i].taskNumber, "2", "Reprovado em lote");
+        var response = processaMovimentacao(tasks[i].taskNumber, "2", "Reprovado");
         response ? failedTasks.push(tasks[i].taskId) : successTasks.push(tasks[i].taskId);
       }
     }
