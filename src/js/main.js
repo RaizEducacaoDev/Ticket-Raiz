@@ -284,7 +284,7 @@ async function processaMovimentacao(id, result, reason) {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      data: { result, reason }
+      data: JSON.stringify({ result, reason })
     });
 
     return response;
