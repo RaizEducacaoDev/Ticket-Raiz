@@ -299,10 +299,6 @@ async function buscaToken() {
     await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
-      headers: {
-        "Authorization": "Bearer 087FJWX5jKVEHZs8BBa%2FOcf36SKh5gpE1FzOx7GSp6WPk0QgWvw3KGS9u9voPjGbXxGwPXztf0Lb03Tg1YX6j%2Fas3%2FDtg1kFoztNALUgRewMA34Mp0zxkaKgLaRDqsklMkol9ItgJhWciu9hOoMrhA%3D%3D", // Adiciona o token Bearer
-        "Content-Type": "application/json" // Garante que a requisição seja interpretada corretamente
-      },
     }).done(response => {
       // Retorna o temporaryToken do objeto "impersonate"
       return response.impersonate.temporaryToken;
