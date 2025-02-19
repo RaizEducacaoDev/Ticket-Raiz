@@ -132,7 +132,7 @@ jq(document).ready(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
 
-            var aprovadores = [1886, 1890, 1885, 1889]
+            var aprovadores = [1886, 1890, 1885, 1889, 4097, 2075, 2076, 2077, 2078, 1891, 1892, 4063, 1894, 2083, 1895, 1896, 1893, 1897, 2079, 2080, 2081, 2084, 2085, 2086, 2087, 2088, 4101]
             var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
             jq('.task-check-action').change(function () {
@@ -295,6 +295,7 @@ async function processaMovimentacao(id, result, reason) {
 
 async function buscaToken() {
   try {
+    var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
     await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
