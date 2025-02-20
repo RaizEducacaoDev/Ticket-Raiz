@@ -54,7 +54,7 @@ jq(document).ready(function () {
 
       var aprovadores = [1886, 1890, 1885, 1889, 4097, 2075, 2076, 2077, 2078, 1891, 1892, 4063, 1894, 2083, 1895, 1896, 1893, 1897, 2079, 2080, 2081, 2084, 2085, 2086, 2087, 2088, 4101]
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
-    
+
       jq('.task-check-action').change(function () {
         if (aprovadores.includes(usuarioLogado)) {
           const isChecked = jq('.task-check-action:checked').length > 0;
@@ -230,10 +230,10 @@ async function validaPendencias() {
 async function movimentaTarefas(decisao) {
   try {
     jq(".app-overlay").show();
-
     let successTasks = [];
     let failedTasks = [];
-
+    let processedCount = 0;
+    
     const tasks = jq('table tbody tr').map(function () {
       const checkbox = jq(this).find('.task-check-action');
       if (checkbox.prop('checked')) {
@@ -243,39 +243,55 @@ async function movimentaTarefas(decisao) {
       }
       return null;
     }).get().filter(task => task !== null);
-
-    for (let i = 0; i < tasks.length; i++) {
-      let response;
-      if (decisao) {
-        response = await processaMovimentacao(tasks[i].taskNumber, "1", "Aprovado");
+    
+    const totalTasks = tasks.length;
+    
+    jq("body").append(`
+      <div id="processingModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; z-index: 100; text-align: center;">
+        <p>Processando movimentações...</p>
+        <p id="progressCount">0 / ${totalTasks}</p>
+      </div>
+    `);
+    
+    for (const task of tasks) {
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Delay fixo de 300ms entre cada requisição
+      const result = decisao ? "1" : "2";
+      const reason = decisao ? "Aprovado" : "Reprovado";
+      const response = await processaMovimentacao(task.taskNumber, result, reason);
+      
+      if (response) {
+        successTasks.push(task.taskId);
       } else {
-        response = await processaMovimentacao(tasks[i].taskNumber, "2", "Reprovado");
+        failedTasks.push(task.taskId);
       }
-
-      response ? successTasks.push(tasks[i].taskId) : failedTasks.push(tasks[i].taskId);
+      
+      processedCount++;
+      jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
     }
-
+    
+    jq("#processingModal").remove();
+    jq(".app-overlay").hide();
+    
     const successCount = successTasks.length;
     const failureCount = failedTasks.length;
-
+    
     if (successCount > 0 && failureCount === 0) {
       mostrarModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
     } else if (successCount === 0 && failureCount > 0) {
-      mostrarModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br<br>!`, function () { window.location.reload(); });
+      mostrarModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`, function () { window.location.reload(); });
     } else if (successCount > 0 && failureCount > 0) {
-      mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br!`, function () { window.location.reload(); });
+      mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`, function () { window.location.reload(); });
     }
-
-    jq(".app-overlay").hide();
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
     jq(".app-overlay").hide();
+    jq("#processingModal").remove();
   }
 }
 
 async function processaMovimentacao(id, result, reason) {
   try {
-    const token = await buscaToken();  // Aguardar o token antes de enviar a requisição
+    let token = await buscaToken();  // Aguardar o token antes de enviar a requisição
 
     const response = await jq.ajax({
       url: `${window.location.origin}/api/2/assignments/${id}`,
@@ -296,17 +312,31 @@ async function processaMovimentacao(id, result, reason) {
 
 async function buscaToken() {
   try {
-    var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/));
-    const response = await jq.ajax({
+    var usuarioLogado = Number(jq("#userId").val().match(/\d+$/)?.[0]);
+    if (isNaN(usuarioLogado)) throw new Error("ID do usuário inválido.");
+
+    var apiUrl = `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/` +
+      (window.location.origin.includes('hml')
+        ? "yjbbrV4FLfJUDeTgo97d3CmCz9CCIBqtlH2OupdGmAiSrUr8-LKFdChlE37fCDRMhGf@-i0xUw8t9Pl8mXHU6w__"
+        : "DDwgBioycx75M0IiEFF-sdk0HwdR17CgcklxG-9Wy5WHeAyX4eV9pCstsjxLBqOYG2SnaXgEA6YhPK1R8LpVdw__"
+      );
+
+    var responseToken = await jq.ajax({ url: apiUrl, method: "GET", headers: { "Content-Type": "application/json" } });
+    const token = responseToken?.success?.[0]?.cod || (() => { throw new Error("Token não encontrado."); })();
+
+    var response = await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
-      method: "GET"
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
     });
 
-    return response.impersonate.temporaryToken;  // Retorna o token
+    return response?.impersonate?.temporaryToken || (() => { throw new Error("Token de impersonação não encontrado."); })();
+
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
-    return null;  // Retorna null caso ocorra erro
+    return null;
   }
+
 }
 
 
