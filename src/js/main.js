@@ -254,7 +254,7 @@ async function movimentaTarefas(decisao) {
     `);
     
     for (const task of tasks) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Delay fixo de 300ms entre cada requisição
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Delay fixo de 300ms entre cada requisição
       const result = decisao ? "1" : "2";
       const reason = decisao ? "Aprovado" : "Reprovado";
       const response = await processaMovimentacao(task.taskNumber, result, reason);
