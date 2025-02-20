@@ -230,10 +230,8 @@ async function validaPendencias() {
 async function movimentaTarefas(decisao) {
   try {
     jq(".app-overlay").show();
-
     let successTasks = [];
     let failedTasks = [];
-
     const tasks = jq('table tbody tr').map(function () {
       const checkbox = jq(this).find('.task-check-action');
       if (checkbox.prop('checked')) {
@@ -244,15 +242,16 @@ async function movimentaTarefas(decisao) {
       return null;
     }).get().filter(task => task !== null);
 
-    for (let i = 0; i < tasks.length; i++) {
-      let response;
-      if (decisao) {
-        response = await processaMovimentacao(tasks[i].taskNumber, "1", "Aprovado");
+    for (const task of tasks) {
+      await new Promise(resolve => setTimeout(resolve, 300)); // Delay fixo de 300ms entre cada requisição
+      const result = decisao ? "1" : "2";
+      const reason = decisao ? "Aprovado" : "Reprovado";
+      const response = await processaMovimentacao(task.taskNumber, result, reason);
+      if (response) {
+        successTasks.push(task.taskId);
       } else {
-        response = await processaMovimentacao(tasks[i].taskNumber, "2", "Reprovado");
+        failedTasks.push(task.taskId);
       }
-
-      response ? successTasks.push(tasks[i].taskId) : failedTasks.push(tasks[i].taskId);
     }
 
     const successCount = successTasks.length;
