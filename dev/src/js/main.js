@@ -232,6 +232,8 @@ async function movimentaTarefas(decisao) {
     jq(".app-overlay").show();
     let successTasks = [];
     let failedTasks = [];
+    let processedCount = 0;
+    
     const tasks = jq('table tbody tr').map(function () {
       const checkbox = jq(this).find('.task-check-action');
       if (checkbox.prop('checked')) {
@@ -241,22 +243,38 @@ async function movimentaTarefas(decisao) {
       }
       return null;
     }).get().filter(task => task !== null);
-
+    
+    const totalTasks = tasks.length;
+    
+    jq("body").append(`
+      <div id="processingModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; z-index: 100; text-align: center;">
+        <p>Processando movimentações...</p>
+        <p id="progressCount">0 / ${totalTasks}</p>
+      </div>
+    `);
+    
     for (const task of tasks) {
       await new Promise(resolve => setTimeout(resolve, 300)); // Delay fixo de 300ms entre cada requisição
       const result = decisao ? "1" : "2";
       const reason = decisao ? "Aprovado" : "Reprovado";
       const response = await processaMovimentacao(task.taskNumber, result, reason);
+      
       if (response) {
         successTasks.push(task.taskId);
       } else {
         failedTasks.push(task.taskId);
       }
+      
+      processedCount++;
+      jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
     }
-
+    
+    jq("#processingModal").remove();
+    jq(".app-overlay").hide();
+    
     const successCount = successTasks.length;
     const failureCount = failedTasks.length;
-
+    
     if (successCount > 0 && failureCount === 0) {
       mostrarModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
     } else if (successCount === 0 && failureCount > 0) {
@@ -264,11 +282,10 @@ async function movimentaTarefas(decisao) {
     } else if (successCount > 0 && failureCount > 0) {
       mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br!`, function () { window.location.reload(); });
     }
-
-    jq(".app-overlay").hide();
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
     jq(".app-overlay").hide();
+    jq("#processingModal").remove();
   }
 }
 
