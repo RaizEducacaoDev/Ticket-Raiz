@@ -254,7 +254,7 @@ async function movimentaTarefas(decisao) {
     `);
     
     for (const task of tasks) {
-      await new Promise(resolve => setTimeout(resolve, 300)); // Delay fixo de 300ms entre cada requisição
+      await new Promise(resolve => setTimeout(resolve, 500)); // Delay fixo de 300ms entre cada requisição
       const result = decisao ? "1" : "2";
       const reason = decisao ? "Aprovado" : "Reprovado";
       const response = await processaMovimentacao(task.taskNumber, result, reason);
@@ -278,9 +278,9 @@ async function movimentaTarefas(decisao) {
     if (successCount > 0 && failureCount === 0) {
       mostrarModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
     } else if (successCount === 0 && failureCount > 0) {
-      mostrarModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br<br>!`, function () { window.location.reload(); });
+      mostrarModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`, function () { window.location.reload(); });
     } else if (successCount > 0 && failureCount > 0) {
-      mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br!`, function () { window.location.reload(); });
+      mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`, function () { window.location.reload(); });
     }
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
