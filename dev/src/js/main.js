@@ -54,7 +54,7 @@ jq(document).ready(function () {
 
       var aprovadores = [1886, 1890, 1885, 1889, 4097, 2075, 2076, 2077, 2078, 1891, 1892, 4063, 1894, 2083, 1895, 1896, 1893, 1897, 2079, 2080, 2081, 2084, 2085, 2086, 2087, 2088, 4101]
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
-    
+
       jq('.task-check-action').change(function () {
         if (aprovadores.includes(usuarioLogado)) {
           const isChecked = jq('.task-check-action:checked').length > 0;
@@ -296,41 +296,31 @@ async function processaMovimentacao(id, result, reason) {
 
 async function buscaToken() {
   try {
-    var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/));
-    if(window.location.origin.includes('hml')) {
-      var token = await jq.ajax({
-        url: `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/yjbbrV4FLfJUDeTgo97d3CmCz9CCIBqtlH2OupdGmAiSrUr8-LKFdChlE37fCDRMhGf@-i0xUw8t9Pl8mXHU6w__`,
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-    } else {
-      var token = await jq.ajax({
-        url: `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/DDwgBioycx75M0IiEFF-sdk0HwdR17CgcklxG-9Wy5WHeAyX4eV9pCstsjxLBqOYG2SnaXgEA6YhPK1R8LpVdw__`,
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-    }
+    var usuarioLogado = Number(jq("#userId").val().match(/\d+$/)?.[0]);
+    if (isNaN(usuarioLogado)) throw new Error("ID do usuário inválido.");
 
-    const response = await jq.ajax({
+    var apiUrl = `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/` +
+      (window.location.origin.includes('hml')
+        ? "yjbbrV4FLfJUDeTgo97d3CmCz9CCIBqtlH2OupdGmAiSrUr8-LKFdChlE37fCDRMhGf@-i0xUw8t9Pl8mXHU6w__"
+        : "DDwgBioycx75M0IiEFF-sdk0HwdR17CgcklxG-9Wy5WHeAyX4eV9pCstsjxLBqOYG2SnaXgEA6YhPK1R8LpVdw__"
+      );
+
+    var responseToken = await jq.ajax({ url: apiUrl, method: "GET", headers: { "Content-Type": "application/json" } });
+    const token = responseToken?.success?.[0]?.cod || (() => { throw new Error("Token não encontrado."); })();
+
+    var response = await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
     });
 
-    return response.impersonate.temporaryToken;  // Retorna o token
+    return response?.impersonate?.temporaryToken || (() => { throw new Error("Token de impersonação não encontrado."); })();
+
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
-    return null;  // Retorna null caso ocorra erro
+    return null;
   }
+
 }
 
 
