@@ -275,7 +275,7 @@ async function movimentaTarefas(decisao) {
 
 async function processaMovimentacao(id, result, reason) {
   try {
-    const token = await buscaToken();  // Aguardar o token antes de enviar a requisição
+    let token = await buscaToken();  // Aguardar o token antes de enviar a requisição
 
     const response = await jq.ajax({
       url: `${window.location.origin}/api/2/assignments/${id}`,
@@ -297,9 +297,33 @@ async function processaMovimentacao(id, result, reason) {
 async function buscaToken() {
   try {
     var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/));
+    if(window.location.origin.includes('hml')) {
+      var token = await jq.ajax({
+        url: `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/yjbbrV4FLfJUDeTgo97d3CmCz9CCIBqtlH2OupdGmAiSrUr8-LKFdChlE37fCDRMhGf@-i0xUw8t9Pl8mXHU6w__`,
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+    } else {
+      var token = await jq.ajax({
+        url: `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/DDwgBioycx75M0IiEFF-sdk0HwdR17CgcklxG-9Wy5WHeAyX4eV9pCstsjxLBqOYG2SnaXgEA6YhPK1R8LpVdw__`,
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+    }
+
     const response = await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
     });
 
     return response.impersonate.temporaryToken;  // Retorna o token
