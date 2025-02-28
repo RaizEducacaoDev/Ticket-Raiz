@@ -25,7 +25,7 @@ function mostrarAlerta(type, title, message, duration = 5000) {
             <div class="alert-title">${title}</div>
             <div class="alert-message">${message}</div>
         </div>
-        <button class="close-btn" onclick="removeAlert(this.parentElement)">×</button>
+        <button class="close-btn" onclick="removerAlerta(this.parentElement)">×</button>
     `;
 
   alertContainer.appendChild(alert);
@@ -36,13 +36,13 @@ function mostrarAlerta(type, title, message, duration = 5000) {
 
   if (type !== 'danger') {
     setTimeout(() => {
-      removeAlert(alert);
+      removerAlerta(alert);
     }, duration);
   }
 }
 
 function mostrarModal(titulo, mensagem, callback) {
-  jq('#modalOverlay, #colorbox').remove();
+  $('#modalOverlay, #colorbox').remove();
 
   const modalHTML = `
       <div id="modalOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 89 !important;"></div>
@@ -56,17 +56,17 @@ function mostrarModal(titulo, mensagem, callback) {
           </div>
       </div>`;
 
-  jq('body').append(modalHTML);
+  $('body').append(modalHTML);
 
-  jq('.close-modal-btn').on('click', function () {
-    jq('#modalOverlay, #colorbox').remove();
+  $('.close-modal-btn').on('click', function () {
+    $('#modalOverlay, #colorbox').remove();
     if (typeof callback === 'function') {
       callback();
     }
   });
 }
 
-function removerAlerta(alerta) {
-  alerta.classList.add('fade-out');
-  setTimeout(() => alerta.remove(), 500);
+function removerAlerta(alert) {
+  alert.classList.add('fade-out');
+  setTimeout(() => alert.remove(), 500);
 }

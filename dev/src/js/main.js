@@ -1,4 +1,4 @@
-jq(document).ready(function () {
+$(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
 
@@ -11,29 +11,29 @@ jq(document).ready(function () {
   addActionRow();
 
   const updateText = (selector, original, updated) => {
-    jq(selector).each(function () {
-      const element = jq(this).find('span').first();
+    $(selector).each(function () {
+      const element = $(this).find('span').first();
       const text = element.text().replace(original, updated);
       element.text(text);
     });
   };
 
   const updatePageTitleAndButton = (original, updated) => {
-    jq('.page-title h1, .btn-new-notification span').each(function () {
-      const text = jq(this).text().replace(original, updated);
-      jq(this).text(text);
+    $('.page-title h1, .btn-new-notification span').each(function () {
+      const text = $(this).text().replace(original, updated);
+      $(this).text(text);
     });
   };
 
   if (dominio.includes('hml')) {
-    jq('#aHeaderMenuHomeName').text('Ticket Raiz HML');
+    $('#aHeaderMenuHomeName').text('Ticket Raiz HML');
   } else {
-    jq('#aHeaderMenuHomeName').text('Ticket Raiz');
+    $('#aHeaderMenuHomeName').text('Ticket Raiz');
   }
 
-  jq(`a[href="${dominio}/my/notifications"]`).removeClass("d-lg-none");
+  $(`a[href="${dominio}/my/notifications"]`).removeClass("d-lg-none");
   updateText(`a[href="${dominio}/my/notifications"]`, /Notificações/g, 'Mensagens');
-  jq(`a[href="${dominio}/my/notifications"] .notification-count`).removeClass('d-none');
+  $(`a[href="${dominio}/my/notifications"] .notification-count`).removeClass('d-none');
 
   switch (page) {
     case `${dominio}/my/notifications`:
@@ -42,32 +42,32 @@ jq(document).ready(function () {
       updatePageTitleAndButton(/notificação/g, 'mensagem');
       break;
     case `${dominio}/my/tasks`:
-      jq("tr").each(function () {
-        jq(this).find("th:first, td:first").removeClass("d-none");
+      $("tr").each(function () {
+        $(this).find("th:first, td:first").removeClass("d-none");
       });
 
       applyDNoneForMobile();
 
-      jq(window).on("resize", applyDNoneForMobile);
+      $(window).on("resize", applyDNoneForMobile);
 
-      jq('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
+      $('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
       var aprovadores = [1886, 1890, 1885, 1889, 4097, 2075, 2076, 2077, 2078, 1891, 1892, 4063, 1894, 2083, 1895, 1896, 1893, 1897, 2079, 2080, 2081, 2084, 2085, 2086, 2087, 2088, 4101]
-      var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
+      var usuarioLogado = parseInt($("#userId").val().match(/(\d+)$/))
 
-      jq('.task-check-action').change(function () {
+      $('.task-check-action').change(function () {
         if (aprovadores.includes(usuarioLogado)) {
-          const isChecked = jq('.task-check-action:checked').length > 0;
-          isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
+          const isChecked = $('.task-check-action:checked').length > 0;
+          isChecked ? $("#containerButton").removeClass("d-none") : $("#containerButton").addClass("d-none");
         }
       });
 
-      jq('#checkbox-header').change(function () {
-        const isChecked = jq(this).prop('checked');
-        jq('.task-check-action').prop('checked', isChecked);
+      $('#checkbox-header').change(function () {
+        const isChecked = $(this).prop('checked');
+        $('.task-check-action').prop('checked', isChecked);
         if (aprovadores.includes(usuarioLogado)) {
-          const isChecked = jq('.task-check-action:checked').length > 0;
-          isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
+          const isChecked = $('.task-check-action:checked').length > 0;
+          isChecked ? $("#containerButton").removeClass("d-none") : $("#containerButton").addClass("d-none");
         }
       });
 
@@ -78,8 +78,8 @@ jq(document).ready(function () {
   }
 
   const observer = new MutationObserver(function (mutations, observerInstance) {
-    if (jq("#userPersona").val() != "PowerUser") {
-      jq("#LkDelete").hide();
+    if ($("#userPersona").val() != "PowerUser") {
+      $("#LkDelete").hide();
     }
 
     observerInstance.disconnect();
@@ -92,8 +92,8 @@ jq(document).ready(function () {
             updateText('.modal-header.bg-white h1', /Notificação/g, 'Mensagem');
             break;
           case `${dominio}/my/services`:
-            jq(mutation.addedNodes).find('.card-title').each(function () {
-              const text = jq(this).text();
+            $(mutation.addedNodes).find('.card-title').each(function () {
+              const text = $(this).text();
               const iconMap = {
                 '[Atendimento]': "https://i.postimg.cc/t4pSfV5M/servico-de-atendimento-ao-consumidor.png",
                 '[BI]': "https://i.postimg.cc/zXn20knh/business-intelligence.png",
@@ -112,33 +112,33 @@ jq(document).ready(function () {
               };
 
               for (const [prefix, iconSrc] of Object.entries(iconMap)) {
-                if (text.startsWith(prefix) && jq(this).find('img').length === 0) {
-                  const icon = jq('<img>', {
+                if (text.startsWith(prefix) && $(this).find('img').length === 0) {
+                  const icon = $('<img>', {
                     src: iconSrc,
                     alt: prefix.replace('[', '').replace(']', ''),
                     style: "width: 32px; height: 32px; margin-right: 10px;"
                   });
-                  jq(this).prepend(icon);
+                  $(this).prepend(icon);
                   break;
                 }
               }
             });
 
-            jq('.fav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/KzWHSJL9/coracao.png" alt="Ícone de favorito">');
-            jq('.unfav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/2jHg6F7L/coracao-3.png" alt="Ícone de favorito">');
+            $('.fav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/KzWHSJL9/coracao.png" alt="Ícone de favorito">');
+            $('.unfav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/2jHg6F7L/coracao-3.png" alt="Ícone de favorito">');
             break;
           case `${dominio}/my/tasks`:
-            jq("tr").each(function () {
-              jq(this).find("th:first, td:first").removeClass("d-none");
+            $("tr").each(function () {
+              $(this).find("th:first, td:first").removeClass("d-none");
             });
 
             var aprovadores = [1886, 1890, 1885, 1889, 4097, 2075, 2076, 2077, 2078, 1891, 1892, 4063, 1894, 2083, 1895, 1896, 1893, 1897, 2079, 2080, 2081, 2084, 2085, 2086, 2087, 2088, 4101]
-            var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
+            var usuarioLogado = parseInt($("#userId").val().match(/(\d+)$/))
 
-            jq('.task-check-action').change(function () {
+            $('.task-check-action').change(function () {
               if (aprovadores.includes(usuarioLogado)) {
-                const isChecked = jq('.task-check-action:checked').length > 0;
-                isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
+                const isChecked = $('.task-check-action:checked').length > 0;
+                isChecked ? $("#containerButton").removeClass("d-none") : $("#containerButton").addClass("d-none");
               }
             });
 
@@ -163,14 +163,14 @@ function addActionRow() {
       </div>
     </div>`;
 
-  jq("#containerLoadMore").after(newRow);
+  $("#containerLoadMore").after(newRow);
 
-  jq("#btnApproveTasks").off("click").on("click", movimentaTarefas.bind(null, true));
-  jq("#btnRejectTasks").off("click").on("click", movimentaTarefas.bind(null, false));
+  $("#btnApproveTasks").off("click").on("click", movimentaTarefas.bind(null, true));
+  $("#btnRejectTasks").off("click").on("click", movimentaTarefas.bind(null, false));
 }
 
 async function validaPendencias() {
-  const tokenElement = jq('input[name="__RequestVerificationToken"]');
+  const tokenElement = $('input[name="__RequestVerificationToken"]');
   const token = tokenElement.length ? tokenElement.val() : null;
 
   if (!token) {
@@ -200,7 +200,7 @@ async function validaPendencias() {
         const dataAtual = new Date();
         let count = 0;
 
-        jq.each(items, function (index, item) {
+        $.each(items, function (index, item) {
           const dataDte = converteParaDate(item.dte);
           const diferencaDias = Math.floor((dataAtual - dataDte) / (1000 * 60 * 60 * 24));
           const regex = /corrigir|correção/i;
@@ -213,8 +213,8 @@ async function validaPendencias() {
         if (count > 0) {
           mostrarAlerta('danger', 'Atenção', `Você ainda possui ${count} solicitações paradas na etapa de correção, não será possível abrir novas solicitações até que resolva suas pendências.`);
         } else {
-          jq('#colorbox, #modalOverlay').remove();
-          jq('body').css({ pointerEvents: 'auto', overflow: 'auto' });
+          $('#colorbox, #modalOverlay').remove();
+          $('body').css({ pointerEvents: 'auto', overflow: 'auto' });
         }
       } else {
         console.warn("Nenhum item encontrado ou estrutura inesperada");
@@ -229,16 +229,16 @@ async function validaPendencias() {
 
 async function movimentaTarefas(decisao) {
   try {
-    jq(".app-overlay").show();
+    $(".app-overlay").show();
     let successTasks = [];
     let failedTasks = [];
     let processedCount = 0;
     
-    const tasks = jq('table tbody tr').map(function () {
-      const checkbox = jq(this).find('.task-check-action');
+    const tasks = $('table tbody tr').map(function () {
+      const checkbox = $(this).find('.task-check-action');
       if (checkbox.prop('checked')) {
-        const taskNumber = jq(this).data('key');
-        const taskId = jq(this).find('td.d-none.d-md-table-cell span.badge').text().trim();
+        const taskNumber = $(this).data('key');
+        const taskId = $(this).find('td.d-none.d-md-table-cell span.badge').text().trim();
         return { taskNumber, taskId };
       }
       return null;
@@ -246,7 +246,7 @@ async function movimentaTarefas(decisao) {
     
     const totalTasks = tasks.length;
     
-    jq("body").append(`
+    $("body").append(`
       <div id="processingModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; z-index: 100; text-align: center;">
         <p>Processando movimentações...</p>
         <p id="progressCount">0 / ${totalTasks}</p>
@@ -266,11 +266,11 @@ async function movimentaTarefas(decisao) {
       }
       
       processedCount++;
-      jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
+      $("#progressCount").text(`${processedCount} / ${totalTasks}`);
     }
     
-    jq("#processingModal").remove();
-    jq(".app-overlay").hide();
+    $("#processingModal").remove();
+    $(".app-overlay").hide();
     
     const successCount = successTasks.length;
     const failureCount = failedTasks.length;
@@ -284,8 +284,8 @@ async function movimentaTarefas(decisao) {
     }
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
-    jq(".app-overlay").hide();
-    jq("#processingModal").remove();
+    $(".app-overlay").hide();
+    $("#processingModal").remove();
   }
 }
 
@@ -293,7 +293,7 @@ async function processaMovimentacao(id, result, reason) {
   try {
     let token = await buscaToken();  // Aguardar o token antes de enviar a requisição
 
-    const response = await jq.ajax({
+    const response = await $.ajax({
       url: `${window.location.origin}/api/2/assignments/${id}`,
       method: "PUT",
       headers: {
@@ -312,7 +312,7 @@ async function processaMovimentacao(id, result, reason) {
 
 async function buscaToken() {
   try {
-    var usuarioLogado = Number(jq("#userId").val().match(/\d+$/)?.[0]);
+    var usuarioLogado = Number($("#userId").val().match(/\d+$/)?.[0]);
     if (isNaN(usuarioLogado)) throw new Error("ID do usuário inválido.");
 
     var apiUrl = `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/` +
@@ -321,10 +321,10 @@ async function buscaToken() {
         : "DDwgBioycx75M0IiEFF-sdk0HwdR17CgcklxG-9Wy5WHeAyX4eV9pCstsjxLBqOYG2SnaXgEA6YhPK1R8LpVdw__"
       );
 
-    var responseToken = await jq.ajax({ url: apiUrl, method: "GET", headers: { "Content-Type": "application/json" } });
+    var responseToken = await $.ajax({ url: apiUrl, method: "GET", headers: { "Content-Type": "application/json" } });
     const token = responseToken?.success?.[0]?.cod || (() => { throw new Error("Token não encontrado."); })();
 
-    var response = await jq.ajax({
+    var response = await $.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
@@ -343,14 +343,14 @@ async function buscaToken() {
 
 function applyDNoneForMobile() {
   const isMobile = window.innerWidth <= 768;
-  jq("#containerReport tr").each(function () {
-    jq(this).find("small").toggleClass("d-none", isMobile);
-    jq('table.table th:nth-last-child(2), table.table td:nth-last-child(2)').hide();
+  $("#containerReport tr").each(function () {
+    $(this).find("small").toggleClass("d-none", isMobile);
+    $('table.table th:nth-last-child(2), table.table td:nth-last-child(2)').hide();
   });
 }
 
 async function verificaAtrasos(dominio) {
-  const tokenElement = jq('input[name="__RequestVerificationToken"]');
+  const tokenElement = $('input[name="__RequestVerificationToken"]');
   const token = tokenElement.length ? tokenElement.val() : null;
 
   if (!token) {
@@ -412,7 +412,7 @@ async function verificaAtrasos(dominio) {
             </div>
           </div>`;
 
-        jq('body').append(modalHTML);
+        $('body').append(modalHTML);
       } else {
         console.warn("Nenhum item encontrado ou estrutura inesperada");
       }
