@@ -1,15 +1,3 @@
-// Bloco: remover jQuery existente e carregar a versão 3.7.1
-(function(){
-  delete window.jQuery;
-  delete window.$;
-  const script = document.createElement('script');
-  script.src = "https://code.jquery.com/jquery-3.7.1.min.js";
-  script.integrity = "sha256-9VBSJQCVE+f/VlSzdumzU9M40HTVozQbaI3c5GBkrJE=";
-  script.crossOrigin = "anonymous";
-  script.onload = function() { console.log("jQuery 3.7.1 loaded."); };
-  document.head.appendChild(script);
-})();
-
 $(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
