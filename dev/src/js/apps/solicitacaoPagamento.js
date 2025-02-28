@@ -38,7 +38,7 @@ jq(document).ready(function() {
             );
 
             jqinputDiasPagamento.val(diferencaEmDias);
-            console.log(`Faltam jq{diferencaEmDias} dias para o vencimento.`);
+            console.log(`Faltam ${diferencaEmDias} dias para o vencimento.`);
         } else {
             console.error("Campo de data de vencimento está vazio.");
         }

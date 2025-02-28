@@ -2,13 +2,13 @@ function formatarData(data) {
     const dia = String(data.getDate()).padStart(2, '0');
     const mes = String(data.getMonth() + 1).padStart(2, '0');
     const ano = data.getFullYear();
-    return `jq{dia}/jq{mes}/jq{ano}`;
+    return `${dia}/${mes}/${ano}`;
 }
 
 function obterDataFormatadaMesDia(data) {
     const dia = String(data.getDate()).padStart(2, '0');
     const mes = String(data.getMonth() + 1).padStart(2, '0');
-    return `jq{mes}-jq{dia}`;
+    return `${mes}-${dia}`;
 }
 
 function isFeriadoOuFimDeSemana(data) {
