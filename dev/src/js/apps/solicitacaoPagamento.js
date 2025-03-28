@@ -1,19 +1,19 @@
 
-jq(document).ready(function() {
-    var jqinputDataVencimento = jq('#inpdataDeVencimento');
-    var jqinputDiasPagamento = jq('#inpdiasParaOPagamento');
+$(document).ready(function() {
+    var $inputDataVencimento = $('#inpdataDeVencimento');
+    var $inputDiasPagamento = $('#inpdiasParaOPagamento');
 
-    if (!jqinputDataVencimento.length) {
+    if (!$inputDataVencimento.length) {
         console.error("Elemento inpdataDeVencimento não encontrado.");
         return;
     }
-    if (!jqinputDiasPagamento.length) {
+    if (!$inputDiasPagamento.length) {
         console.error("Elemento inpdiasParaOPagamento não encontrado.");
         return;
     }
 
-    jqinputDataVencimento.on('change', function() {
-        var dataString = jqinputDataVencimento.val();
+    $inputDataVencimento.on('change', function() {
+        var dataString = $inputDataVencimento.val();
 
         if (dataString) {
             var partesData = dataString.split("/");
@@ -37,7 +37,7 @@ jq(document).ready(function() {
                 (dataDeVencimento - dataAtual) / (1000 * 60 * 60 * 24)
             );
 
-            jqinputDiasPagamento.val(diferencaEmDias);
+            $inputDiasPagamento.val(diferencaEmDias);
             console.log(`Faltam ${diferencaEmDias} dias para o vencimento.`);
         } else {
             console.error("Campo de data de vencimento está vazio.");
@@ -55,7 +55,7 @@ function validaDataVencimento(input) {
     if (dataEscolhida <= dataAtual) {
         cryo_alert('<p style="color: red; text-align: center;">A data escolhida não pode ser a data atual ou uma data anterior.</p>');
         input.value = '';
-        jq('#inptipoDePedido').hide();
+        $('#inptipoDePedido').hide();
         return;
     }
 
@@ -67,12 +67,12 @@ function validaDataVencimento(input) {
     const diferencaDias = diferencaTempo / (1000 * 3600 * 24);
 
     if (diferencaDias <= 7) {
-        jq('#inptipoDePedido').val('EMERGÊNCIAL');
+        $('#inptipoDePedido').val('EMERGÊNCIAL');
     } else {
-        jq('#inptipoDePedido').val('REGULAR');
+        $('#inptipoDePedido').val('REGULAR');
     }
 
-    jq('#inptipoDePedido').show();
+    $('#inptipoDePedido').show();
 
     input.value = formatarData(dataEscolhida);
 }
@@ -88,7 +88,7 @@ function vencimentoParcela(input) {
     if (dataEscolhida <= dataAtual) {
         cryo_alert('<p style="color: red; text-align: center;">A data escolhida não pode ser a data atual ou uma data anterior.</p>');
         input.value = '';
-        jq('#inptipoDePedido').hide();
+        $('#inptipoDePedido').hide();
         return;
     } else {
         if (isFeriadoOuFimDeSemana(dataEscolhida)) {
@@ -98,8 +98,8 @@ function vencimentoParcela(input) {
 
         var datasDeVencimento = [];
 
-        jq('input[data-name="vencimentoDaParcela"]').each(function () {
-            var valorData = jq(this).val().trim();
+        $('input[data-name="vencimentoDaParcela"]').each(function () {
+            var valorData = $(this).val().trim();
 
             if (valorData !== '') {
                 var partesData = valorData.split('/');
@@ -116,15 +116,15 @@ function vencimentoParcela(input) {
             const diferencaDias = diferencaTempo / (1000 * 3600 * 24);
 
             if (diferencaDias <= 2) {
-                jq('#inptipoDePedido').val('EMERGÊNCIAL');
+                $('#inptipoDePedido').val('EMERGÊNCIAL');
             } else if (diferencaDias <= 4 && diferencaDias > 2) {
-                jq('#inptipoDePedido').val('URGENTE');
+                $('#inptipoDePedido').val('URGENTE');
             } else {
-                jq('#inptipoDePedido').val('REGULAR');
+                $('#inptipoDePedido').val('REGULAR');
             }
 
-            jq('#inptipoDePedido').show();
-            jq('#inpdataDeVencimento').val(formatarData(menorData));
+            $('#inptipoDePedido').show();
+            $('#inpdataDeVencimento').val(formatarData(menorData));
         } else {
             console.log('Nenhuma data de vencimento encontrada.');
         }

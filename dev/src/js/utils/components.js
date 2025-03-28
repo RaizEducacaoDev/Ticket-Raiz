@@ -25,7 +25,7 @@ function mostrarAlerta(type, title, message, duration = 5000) {
             <div class="alert-title">${title}</div>
             <div class="alert-message">${message}</div>
         </div>
-        <button class="close-btn" onclick="removerAlerta(this.parentElement)">×</button>
+        <button class="close-btn" onclick="removeAlert(this.parentElement)">×</button>
     `;
 
   alertContainer.appendChild(alert);
@@ -36,7 +36,7 @@ function mostrarAlerta(type, title, message, duration = 5000) {
 
   if (type !== 'danger') {
     setTimeout(() => {
-      removerAlerta(alert);
+      removeAlert(alert);
     }, duration);
   }
 }
@@ -66,7 +66,7 @@ function mostrarModal(titulo, mensagem, callback) {
   });
 }
 
-function removerAlerta(alert) {
-  alert.classList.add('fade-out');
-  setTimeout(() => alert.remove(), 500);
+function removerAlerta(alerta) {
+  alerta.classList.add('fade-out');
+  setTimeout(() => alerta.remove(), 500);
 }

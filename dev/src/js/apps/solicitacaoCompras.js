@@ -1,4 +1,4 @@
-jq(document).ready(function () {
+$(document).ready(function () {
   // ...existing code...
 });
 
