@@ -25,7 +25,7 @@ $(document).ready(function () {
     defineCodigoDoMovimento()
 	})
   
-    $('#inpdataDeVencimento').on('change', function() {
+    $('#inpdataDeVencimento, #inpvencimentoDaParcela').on('change', function() {
         validaDataVencimento(this);
     });
 
