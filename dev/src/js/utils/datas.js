@@ -63,19 +63,19 @@ function converteParaDate(dataStr) {
 }
 
 function ajustarParaDiaPermitido(data) {
-    while (!isDiaPermitido(data) || isFeriado(data)) {
-        const diaSemana = data.getDay();
+    // Trata fins de semana: avança até o próximo dia útil permitido
+    while (isFimDeSemana(data)) {
+        data.setDate(data.getDate() + 1);
+    }
 
-        if (diaSemana === 2 || diaSemana === 4 || isFeriado(data)) {
-            // Se for terça, quinta ou feriado, retrocede um dia
+    // Trata feriados: retrocede até o dia útil permitido
+    while (isFeriado(data) || !isDiaPermitido(data)) {
+        data.setDate(data.getDate() - 1);
+        // Garante que não caia em fim de semana após retroceder
+        while (isFimDeSemana(data)) {
             data.setDate(data.getDate() - 1);
-        } else if (diaSemana === 6) {
-            // Se for sábado, avança para segunda-feira
-            data.setDate(data.getDate() + 2);
-        } else if (diaSemana === 0) {
-            // Se for domingo, avança para segunda-feira
-            data.setDate(data.getDate() + 1);
         }
     }
+
     return data;
 }
