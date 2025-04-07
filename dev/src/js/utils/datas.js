@@ -61,3 +61,21 @@ function converteParaDate(dataStr) {
   const partes = dataStr.split("/");
   return new Date(partes[2], partes[1] - 1, partes[0]);
 }
+
+function ajustarParaDiaPermitido(data) {
+    while (!isDiaPermitido(data) || isFeriado(data)) {
+        const diaSemana = data.getDay();
+
+        if (diaSemana === 2 || diaSemana === 4 || isFeriado(data)) {
+            // Se for terça, quinta ou feriado, retrocede um dia
+            data.setDate(data.getDate() - 1);
+        } else if (diaSemana === 6) {
+            // Se for sábado, avança para segunda-feira
+            data.setDate(data.getDate() + 2);
+        } else if (diaSemana === 0) {
+            // Se for domingo, avança para segunda-feira
+            data.setDate(data.getDate() + 1);
+        }
+    }
+    return data;
+}
