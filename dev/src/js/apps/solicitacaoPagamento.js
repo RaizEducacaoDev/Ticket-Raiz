@@ -21,13 +21,9 @@ $(document).ready(function () {
     defineCodigoDoMovimento()
   });
   
-  $('#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor').on('change', function() {
-    defineCodigoDoMovimento()
+	$('#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor').on('change', function() {
+		defineCodigoDoMovimento()
 	})
-  
-    $('#inpdataDeVencimento, #inpvencimentoDaParcela').on('change', function() {
-        validaDataVencimento(this);
-    });
 
 });
 
