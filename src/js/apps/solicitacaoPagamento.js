@@ -51,30 +51,33 @@ $(document).ready(function () {
 
 });
 
-function validaDataVencimento(input){
-    const valor = input.val();
-    if (!valor) return;
+function validaDataVencimento(input) {
+  const $input = $(input); // garante que seja um objeto jQuery
+  const valor = $input.val();
 
-    const dataDigitada = new Date(valor);
-    const hoje = new Date();
-    const dataAjustada = ajustarParaSegQuaSexUtil(dataDigitada, hoje);
+  if (!valor) return;
 
-    // Atualiza o campo se a data foi modificada
-    if (!datasIguais(dataDigitada, dataAjustada)) {
-      const novaDataStr = formatarDataInput(dataAjustada);
-      input.val(novaDataStr);
-      console.log("??? Data ajustada:", novaDataStr);
-    } else {
-      console.log("? Data dentro da política.");
-    }
+  const dataDigitada = new Date(valor);
+  if (isNaN(dataDigitada)) return;
 
-    // Classificação com base em dias úteis
-    const diasUteis = contarDiasUteisEntre(hoje, dataAjustada);
-    const classificacao = diasUteis >= 5 ? "REGULAR" : "EMERGENCIAL";
+  const hoje = new Date();
+  const dataAjustada = ajustarParaSegQuaSexUtil(dataDigitada, hoje);
 
-    $("#inptipoDePedido").val(classificacao);
-    console.log("?? tipoDePedido:", classificacao);
+  if (!datasIguais(dataDigitada, dataAjustada)) {
+    const novaDataStr = formatarDataInput(dataAjustada);
+    $input.val(novaDataStr);
+    console.log("??? Data ajustada:", novaDataStr);
+  } else {
+    console.log("? Data dentro da política.");
+  }
+
+  const diasUteis = contarDiasUteisEntre(hoje, dataAjustada);
+  const classificacao = diasUteis >= 5 ? "REGULAR" : "EMERGENCIAL";
+
+  $("#inptipoDePedido").val(classificacao);
+  console.log("?? tipoDePedido:", classificacao);
 }
+
 
 function defineCodigoDoMovimento() {
   const tipoSolicitacao = $('#inptipoDaSolicitacao').val()
