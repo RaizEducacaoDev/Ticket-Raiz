@@ -1,132 +1,217 @@
+$(document).ready(function () {
+  $("b:contains('hide')").closest('tr').hide();
 
-$(document).ready(function() {
-    var $inputDataVencimento = $('#inpdataDeVencimento');
-    var $inputDiasPagamento = $('#inpdiasParaOPagamento');
+  verificarQtdLinhas();
 
-    if (!$inputDataVencimento.length) {
-        console.error("Elemento inpdataDeVencimento não encontrado.");
-        return;
-    }
-    if (!$inputDiasPagamento.length) {
-        console.error("Elemento inpdiasParaOPagamento não encontrado.");
-        return;
-    }
+  $(document).on('click', '#btnInsertNewRow', function () {
+    setTimeout(verificarQtdLinhas, 10);
+  });
 
-    $inputDataVencimento.on('change', function() {
-        var dataString = $inputDataVencimento.val();
+  $(document).on('click', '.btn-delete-mv', function () {
+    setTimeout(verificarQtdLinhas, 10);
+  });
 
-        if (dataString) {
-            var partesData = dataString.split("/");
 
-            if (partesData.length !== 3) {
-                console.error("Formato de data inválido. Use dd/mm/aaaa.");
-                return;
-            }
+  $(document).on('change', '#inpcondicaoDePagamento', function () {
+    setTimeout(verificarQtdLinhas, 10);
+  });
 
-            var dia = parseInt(partesData[0], 10);
-            var mes = parseInt(partesData[1], 10) - 1;
-            var ano = parseInt(partesData[2], 10);
+  $(document).on('change', '#inptipoDaSolicitacao', function () {
+    defineCodigoDoMovimento()
+  });
+  
+	$('#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor').on('change', function() {
+		defineCodigoDoMovimento()
+	})
+  
+   $("#inpdataDeVencimento, inpvencimentoDaParcela").on("change", function () {
+    const valor = $(this).val();
+    if (!valor) return;
 
-            var dataDeVencimento = new Date(ano, mes, dia);
-            var dataAtual = new Date();
+    const dataDigitada = new Date(valor);
+    const hoje = new Date();
+    const dataAjustada = ajustarParaSegQuaSexUtil(dataDigitada, hoje);
 
-            dataAtual.setHours(0, 0, 0, 0);
-            dataDeVencimento.setHours(0, 0, 0, 0);
-
-            var diferencaEmDias = Math.ceil(
-                (dataDeVencimento - dataAtual) / (1000 * 60 * 60 * 24)
-            );
-
-            $inputDiasPagamento.val(diferencaEmDias);
-            console.log(`Faltam ${diferencaEmDias} dias para o vencimento.`);
-        } else {
-            console.error("Campo de data de vencimento está vazio.");
-        }
-    });
-});
-function validaDataVencimento(input) {
-    let dataInput = input.value;
-    let [dia, mes, ano] = dataInput.split('/');
-    let dataEscolhida = new Date(ano, mes - 1, dia);
-
-    let dataAtual = new Date();
-    dataAtual.setHours(0, 0, 0, 0);
-
-    if (dataEscolhida <= dataAtual) {
-        cryo_alert('<p style="color: red; text-align: center;">A data escolhida não pode ser a data atual ou uma data anterior.</p>');
-        input.value = '';
-        $('#inptipoDePedido').hide();
-        return;
-    }
-
-    while (isFeriadoOuFimDeSemana(dataEscolhida)) {
-        dataEscolhida.setDate(dataEscolhida.getDate() + 1);
-    }
-
-    const diferencaTempo = dataEscolhida - dataAtual;
-    const diferencaDias = diferencaTempo / (1000 * 3600 * 24);
-
-    if (diferencaDias <= 7) {
-        $('#inptipoDePedido').val('EMERGÊNCIAL');
+    // Atualiza o campo se a data foi modificada
+    if (!datasIguais(dataDigitada, dataAjustada)) {
+      const novaDataStr = formatarDataInput(dataAjustada);
+      $(this).val(novaDataStr);
+      console.log("??? Data ajustada:", novaDataStr);
     } else {
-        $('#inptipoDePedido').val('REGULAR');
+      console.log("? Data dentro da política.");
     }
 
-    $('#inptipoDePedido').show();
+    // Classificação com base em dias úteis
+    const diasUteis = contarDiasUteisEntre(hoje, dataAjustada);
+    const classificacao = diasUteis >= 5 ? "REGULAR" : "EMERGENCIAL";
 
-    input.value = formatarData(dataEscolhida);
+    $("#inptipoDePedido").val(classificacao);
+    console.log("?? tipoDePedido:", classificacao);
+  });
+
+});
+
+function validaDataVencimento(input){
+    const valor = input.val();
+    if (!valor) return;
+
+    const dataDigitada = new Date(valor);
+    const hoje = new Date();
+    const dataAjustada = ajustarParaSegQuaSexUtil(dataDigitada, hoje);
+
+    // Atualiza o campo se a data foi modificada
+    if (!datasIguais(dataDigitada, dataAjustada)) {
+      const novaDataStr = formatarDataInput(dataAjustada);
+      input.val(novaDataStr);
+      console.log("??? Data ajustada:", novaDataStr);
+    } else {
+      console.log("? Data dentro da política.");
+    }
+
+    // Classificação com base em dias úteis
+    const diasUteis = contarDiasUteisEntre(hoje, dataAjustada);
+    const classificacao = diasUteis >= 5 ? "REGULAR" : "EMERGENCIAL";
+
+    $("#inptipoDePedido").val(classificacao);
+    console.log("?? tipoDePedido:", classificacao);
 }
 
-function vencimentoParcela(input) {
-    let dataInput = input.value;
-    let [dia, mes, ano] = dataInput.split('/');
-    let dataEscolhida = new Date(ano, mes - 1, dia);
+function defineCodigoDoMovimento() {
+  const tipoSolicitacao = $('#inptipoDaSolicitacao').val()
+  const tipoDoPagamento = $('#inptipoDoPagamento').val()
 
-    let dataAtual = new Date();
-    dataAtual.setHours(0, 0, 0, 0);
+  switch (tipoSolicitacao) {
+    case "AD":
+      $("#inpcodigoDoMovimento").val("1.2.06")
+      $("#inpserie").val("AD")
+      break;
+    case "PG":
+      if (tipoDoPagamento == "CC") {
+        let contasDeConsumo = $("#inpcontasDeConsumo").val();
+        $("#inpserie").val("1")
+        if(contasDeConsumo == "A"){
+          $("#inpcodigoDoMovimento").val("1.2.09")
+        } else if (contasDeConsumo == "E") {
+          $("#inpcodigoDoMovimento").val("1.2.10")
+        } else if (contasDeConsumo == "T") {
+          $("#inpcodigoDoMovimento").val("1.2.11")
+        } else if (contasDeConsumo == "G") {
+          $("#inpcodigoDoMovimento").val("1.2.12")
+        }
+      
+      } else if (tipoDoPagamento == "NF") {
+        if ($("#inptipoDeItem").val() == "Material") {
+          $("#inpserie").val($("#inpserieDaNF").val())
+          $("#inpcodigoDoMovimento").val("1.2.01")
+        } else if ($("#inptipoDeItem").val() == "Serviço") {
+          $("#inpserie").val($("#inpserieDaNF").val())
+          $("#inpcodigoDoMovimento").val("1.2.03")
+        }
+      } else if (tipoDoPagamento == "OG") {
+        if ($("#inpoutrosGastos").val() == "RF") {
+          $("#inpserie").val("1")
+          $("#inpcodigoDoMovimento").val("1.2.16")
+        } else if ($("#inpoutrosGastos").val() == "AL" && $("#inptipoDoLocador").val() == "Pessoa Jurídica") {
+          $("#inpserie").val("ALPJ")
+          $("#inpcodigoDoMovimento").val("1.2.17")
+        } else if ($("#inpoutrosGastos").val() == "AL" && $("#inptipoDoLocador").val() == "Pessoa Fisica") {
+          $("#inpserie").val("ALPF")
+          $("#inpcodigoDoMovimento").val("1.2.08")
+        }
+      } else if (tipoDoPagamento == "TM") {
+        $("#inpserie").val($("#inpserieDaNF").val())
+        $("#inpcodigoDoMovimento").val("1.2.25")
+      }
+      break;
+    case "RE":
+      $("#inpcodigoDoMovimento").val("1.2.07")
+      $("#inpserie").val("PR")
+      break;
+    case "FF":
+      $("#inpcodigoDoMovimento").val("1.2.29")
+      $("#inpserie").val("PR")
+      break;
+  }
+}
 
-    if (dataEscolhida <= dataAtual) {
-        cryo_alert('<p style="color: red; text-align: center;">A data escolhida não pode ser a data atual ou uma data anterior.</p>');
-        input.value = '';
-        $('#inptipoDePedido').hide();
-        return;
+<script>
+const feriados = [
+  "01-01", "04-21", "05-01", "09-07", "10-12",
+  "11-02", "11-15", "12-25", "01-20",
+  "02-20", "03-29", "06-01"
+];
+
+function ehFeriado(data) {
+  const mmdd = data.toISOString().slice(5, 10);
+  return feriados.includes(mmdd);
+}
+
+function ehSegQuaSex(data) {
+  const dia = data.getDay();
+  return dia === 1 || dia === 3 || dia === 5;
+}
+
+function datasIguais(data1, data2) {
+  return data1.toDateString() === data2.toDateString();
+}
+
+function proximoSegQuaSex(data) {
+  let novaData = new Date(data);
+  do {
+    novaData.setDate(novaData.getDate() + 1);
+  } while (!ehSegQuaSex(novaData) || ehFeriado(novaData));
+  return novaData;
+}
+
+function ajustarParaSegQuaSexUtil(data, referenciaHoje) {
+  let novaData = new Date(data);
+
+  const diaSemana = novaData.getDay();
+
+  if (diaSemana === 6 || diaSemana === 0) {
+    let proximaSegunda = new Date(novaData);
+    proximaSegunda.setDate(proximaSegunda.getDate() + (8 - diaSemana));
+
+    if (ehFeriado(proximaSegunda)) {
+      let sextaAnterior = new Date(novaData);
+      sextaAnterior.setDate(sextaAnterior.getDate() - (diaSemana === 6 ? 1 : 2));
+      while ((sextaAnterior.getDay() !== 5 || ehFeriado(sextaAnterior))) {
+        sextaAnterior.setDate(sextaAnterior.getDate() - 1);
+      }
+      novaData = sextaAnterior;
     } else {
-        if (isFeriadoOuFimDeSemana(dataEscolhida)) {
-            let dataFinal = adicionarDiasUteis(dataEscolhida, 1);
-            input.value = formatarData(dataFinal);
-        }
-
-        var datasDeVencimento = [];
-
-        $('input[data-name="vencimentoDaParcela"]').each(function () {
-            var valorData = $(this).val().trim();
-
-            if (valorData !== '') {
-                var partesData = valorData.split('/');
-                var dataISO = new Date(partesData[2], partesData[1] - 1, partesData[0]);
-
-                datasDeVencimento.push(dataISO);
-            }
-        });
-
-        if (datasDeVencimento.length > 0) {
-            var menorData = new Date(Math.min.apply(null, datasDeVencimento));
-
-            const diferencaTempo = menorData - dataAtual;
-            const diferencaDias = diferencaTempo / (1000 * 3600 * 24);
-
-            if (diferencaDias <= 2) {
-                $('#inptipoDePedido').val('EMERGÊNCIAL');
-            } else if (diferencaDias <= 4 && diferencaDias > 2) {
-                $('#inptipoDePedido').val('URGENTE');
-            } else {
-                $('#inptipoDePedido').val('REGULAR');
-            }
-
-            $('#inptipoDePedido').show();
-            $('#inpdataDeVencimento').val(formatarData(menorData));
-        } else {
-            console.log('Nenhuma data de vencimento encontrada.');
-        }
+      novaData = proximaSegunda;
     }
+  }
+
+  while (!ehSegQuaSex(novaData)) {
+    novaData.setDate(novaData.getDate() + 1);
+  }
+
+  while (ehFeriado(novaData)) {
+    do {
+      novaData.setDate(novaData.getDate() - 1);
+    } while (!ehSegQuaSex(novaData) || ehFeriado(novaData));
+  }
+
+  if (datasIguais(novaData, referenciaHoje)) {
+    novaData = proximoSegQuaSex(novaData);
+  }
+
+  return novaData;
+}
+
+function formatarDataInput(data) {
+  return data.toISOString().split("T")[0];
+}
+
+
+function verificarQtdLinhas() {
+  const tabelaAlvo = $('input#inpnumeroDaParcela').closest('table');
+  const qtdLinhas = tabelaAlvo.find('tbody tr').length - 1;
+  const qtdParcelas = $("#inpqtdParcelas").val();
+  const codigoDaCondicao = $("#inpcodigoDaCondicaoPagamento").val();
+  if (qtdParcelas != "" && codigoDaCondicao != "") {
+    tabelaAlvo.find('#btnInsertNewRow').prop('disabled', qtdLinhas >= qtdParcelas);
+  }
 }
