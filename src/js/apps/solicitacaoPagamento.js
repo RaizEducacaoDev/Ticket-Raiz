@@ -110,9 +110,22 @@ function defineCodigoDoMovimento() {
 }
 
 const feriados = [
-  "01-01", "04-21", "05-01", "09-07", "10-12",
-  "11-02", "11-15", "12-25", "01-20",
-  "02-20", "03-29", "06-01"
+  "01-01",  // Confraternização Universal
+  "03-03",  // Carnaval (segunda)
+  "03-04",  // Carnaval (terça)
+  "04-18",  // Sexta-feira Santa (Paixão de Cristo)
+  "04-21",  // Tiradentes
+  "05-01",  // Dia do Trabalho
+  "06-19",  // Corpus Christi
+  "09-07",  // Independência do Brasil
+  "10-12",  // Nossa Senhora Aparecida
+  "11-02",  // Finados
+  "11-15",  // Proclamação da República
+  "11-20",  // Zumbi/Consciência Negra
+  "12-25",   // Natal
+  "01-20",  // São Sebastião (Município RJ)
+  "03-01",  // Aniversário da Cidade do Rio de Janeiro
+  "04-23"   // São Jorge (Estado RJ)
 ];
 
 function ehFeriado(data) {
