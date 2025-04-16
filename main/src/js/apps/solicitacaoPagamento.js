@@ -11,60 +11,37 @@ $(document).ready(function () {
     setTimeout(verificarQtdLinhas, 10);
   });
 
-
   $(document).on('change', '#inpcondicaoDePagamento', function () {
     setTimeout(verificarQtdLinhas, 10);
   });
 
   $(document).on('change', '#inptipoDaSolicitacao', function () {
-    defineCodigoDoMovimento()
-  });
-  
-	$('#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor').on('change', function() {
-		defineCodigoDoMovimento()
-	})
-  
-   $("#inpdataDeVencimento, inpvencimentoDaParcela").on("change", function () {
-    const valor = $(this).val();
-    if (!valor) return;
-
-    const dataDigitada = new Date(valor);
-    const hoje = new Date();
-    const dataAjustada = ajustarParaSegQuaSexUtil(dataDigitada, hoje);
-
-    // Atualiza o campo se a data foi modificada
-    if (!datasIguais(dataDigitada, dataAjustada)) {
-      const novaDataStr = formatarDataInput(dataAjustada);
-      $(this).val(novaDataStr);
-      console.log("??? Data ajustada:", novaDataStr);
-    } else {
-      console.log("? Data dentro da política.");
-    }
-
-    // Classificação com base em dias úteis
-    const diasUteis = contarDiasUteisEntre(hoje, dataAjustada);
-    const classificacao = diasUteis >= 5 ? "REGULAR" : "EMERGENCIAL";
-
-    $("#inptipoDePedido").val(classificacao);
-    console.log("?? tipoDePedido:", classificacao);
+    defineCodigoDoMovimento();
   });
 
+  $('#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor').on('change', function () {
+    defineCodigoDoMovimento();
+  });
+
+  $("#inpdataDeVencimento, #inpvencimentoDaParcela").on("change", function () {
+    validaDataVencimento($(this));
+  });
 });
 
 function validaDataVencimento(input) {
-  const $input = $(input); // garante que seja um objeto jQuery
+  const $input = $(input);
   const valor = $input.val();
 
   if (!valor) return;
 
-  const dataDigitada = new Date(valor);
-  if (isNaN(dataDigitada)) return;
+  const dataDigitada = parseDataBR(valor);
+  if (!dataDigitada) return;
 
   const hoje = new Date();
-  const dataAjustada = ajustarParaSegQuaSexUtil(dataDigitada, hoje);
+  const dataAjustada = ajustarParaFrente(dataDigitada);
 
   if (!datasIguais(dataDigitada, dataAjustada)) {
-    const novaDataStr = formatarDataInput(dataAjustada);
+    const novaDataStr = formatarDataInputBR(dataAjustada);
     $input.val(novaDataStr);
     console.log("??? Data ajustada:", novaDataStr);
   } else {
@@ -78,61 +55,56 @@ function validaDataVencimento(input) {
   console.log("?? tipoDePedido:", classificacao);
 }
 
-
 function defineCodigoDoMovimento() {
-  const tipoSolicitacao = $('#inptipoDaSolicitacao').val()
-  const tipoDoPagamento = $('#inptipoDoPagamento').val()
+  const tipoSolicitacao = $('#inptipoDaSolicitacao').val();
+  const tipoDoPagamento = $('#inptipoDoPagamento').val();
 
   switch (tipoSolicitacao) {
     case "AD":
-      $("#inpcodigoDoMovimento").val("1.2.06")
-      $("#inpserie").val("AD")
+      $("#inpcodigoDoMovimento").val("1.2.06");
+      $("#inpserie").val("AD");
       break;
+
     case "PG":
-      if (tipoDoPagamento == "CC") {
-        let contasDeConsumo = $("#inpcontasDeConsumo").val();
-        $("#inpserie").val("1")
-        if(contasDeConsumo == "A"){
-          $("#inpcodigoDoMovimento").val("1.2.09")
-        } else if (contasDeConsumo == "E") {
-          $("#inpcodigoDoMovimento").val("1.2.10")
-        } else if (contasDeConsumo == "T") {
-          $("#inpcodigoDoMovimento").val("1.2.11")
-        } else if (contasDeConsumo == "G") {
-          $("#inpcodigoDoMovimento").val("1.2.12")
+      if (tipoDoPagamento === "CC") {
+        const contasDeConsumo = $("#inpcontasDeConsumo").val();
+        $("#inpserie").val("1");
+        const codigos = { "A": "1.2.09", "E": "1.2.10", "T": "1.2.11", "G": "1.2.12" };
+        $("#inpcodigoDoMovimento").val(codigos[contasDeConsumo] || "");
+      } else if (tipoDoPagamento === "NF") {
+        const tipoItem = $("#inptipoDeItem").val();
+        const serieNF = $("#inpserieDaNF").val();
+        $("#inpserie").val(serieNF);
+        $("#inpcodigoDoMovimento").val(tipoItem === "Material" ? "1.2.01" : tipoItem === "Serviço" ? "1.2.03" : "");
+      } else if (tipoDoPagamento === "OG") {
+        const outrosGastos = $("#inpoutrosGastos").val();
+        const tipoLocador = $("#inptipoDoLocador").val();
+        if (outrosGastos === "RF") {
+          $("#inpserie").val("1");
+          $("#inpcodigoDoMovimento").val("1.2.16");
+        } else if (outrosGastos === "AL") {
+          if (tipoLocador === "Pessoa Jurídica") {
+            $("#inpserie").val("ALPJ");
+            $("#inpcodigoDoMovimento").val("1.2.17");
+          } else if (tipoLocador === "Pessoa Fisica") {
+            $("#inpserie").val("ALPF");
+            $("#inpcodigoDoMovimento").val("1.2.08");
+          }
         }
-      
-      } else if (tipoDoPagamento == "NF") {
-        if ($("#inptipoDeItem").val() == "Material") {
-          $("#inpserie").val($("#inpserieDaNF").val())
-          $("#inpcodigoDoMovimento").val("1.2.01")
-        } else if ($("#inptipoDeItem").val() == "Serviço") {
-          $("#inpserie").val($("#inpserieDaNF").val())
-          $("#inpcodigoDoMovimento").val("1.2.03")
-        }
-      } else if (tipoDoPagamento == "OG") {
-        if ($("#inpoutrosGastos").val() == "RF") {
-          $("#inpserie").val("1")
-          $("#inpcodigoDoMovimento").val("1.2.16")
-        } else if ($("#inpoutrosGastos").val() == "AL" && $("#inptipoDoLocador").val() == "Pessoa Jurídica") {
-          $("#inpserie").val("ALPJ")
-          $("#inpcodigoDoMovimento").val("1.2.17")
-        } else if ($("#inpoutrosGastos").val() == "AL" && $("#inptipoDoLocador").val() == "Pessoa Fisica") {
-          $("#inpserie").val("ALPF")
-          $("#inpcodigoDoMovimento").val("1.2.08")
-        }
-      } else if (tipoDoPagamento == "TM") {
-        $("#inpserie").val($("#inpserieDaNF").val())
-        $("#inpcodigoDoMovimento").val("1.2.25")
+      } else if (tipoDoPagamento === "TM") {
+        $("#inpserie").val($("#inpserieDaNF").val());
+        $("#inpcodigoDoMovimento").val("1.2.25");
       }
       break;
+
     case "RE":
-      $("#inpcodigoDoMovimento").val("1.2.07")
-      $("#inpserie").val("PR")
+      $("#inpcodigoDoMovimento").val("1.2.07");
+      $("#inpserie").val("PR");
       break;
+
     case "FF":
-      $("#inpcodigoDoMovimento").val("1.2.29")
-      $("#inpserie").val("PR")
+      $("#inpcodigoDoMovimento").val("1.2.29");
+      $("#inpserie").val("PR");
       break;
   }
 }
@@ -148,72 +120,61 @@ function ehFeriado(data) {
   return feriados.includes(mmdd);
 }
 
-function ehSegQuaSex(data) {
+function ehDiaUtil(data) {
   const dia = data.getDay();
-  return dia === 1 || dia === 3 || dia === 5;
+  return dia >= 1 && dia <= 5 && !ehFeriado(data); // segunda a sexta e não feriado
 }
 
 function datasIguais(data1, data2) {
   return data1.toDateString() === data2.toDateString();
 }
 
-function proximoSegQuaSex(data) {
+function ajustarParaFrente(data) {
   let novaData = new Date(data);
-  do {
+  while (!ehDiaUtil(novaData)) {
     novaData.setDate(novaData.getDate() + 1);
-  } while (!ehSegQuaSex(novaData) || ehFeriado(novaData));
+  }
   return novaData;
 }
 
-function ajustarParaSegQuaSexUtil(data, referenciaHoje) {
-  let novaData = new Date(data);
+function contarDiasUteisEntre(inicio, fim) {
+  let dias = 0;
+  const dataAtual = new Date(inicio);
+  dataAtual.setHours(0, 0, 0, 0);
 
-  const diaSemana = novaData.getDay();
-
-  if (diaSemana === 6 || diaSemana === 0) {
-    let proximaSegunda = new Date(novaData);
-    proximaSegunda.setDate(proximaSegunda.getDate() + (8 - diaSemana));
-
-    if (ehFeriado(proximaSegunda)) {
-      let sextaAnterior = new Date(novaData);
-      sextaAnterior.setDate(sextaAnterior.getDate() - (diaSemana === 6 ? 1 : 2));
-      while ((sextaAnterior.getDay() !== 5 || ehFeriado(sextaAnterior))) {
-        sextaAnterior.setDate(sextaAnterior.getDate() - 1);
-      }
-      novaData = sextaAnterior;
-    } else {
-      novaData = proximaSegunda;
-    }
+  while (dataAtual < fim) {
+    if (ehDiaUtil(dataAtual)) dias++;
+    dataAtual.setDate(dataAtual.getDate() + 1);
   }
 
-  while (!ehSegQuaSex(novaData)) {
-    novaData.setDate(novaData.getDate() + 1);
-  }
-
-  while (ehFeriado(novaData)) {
-    do {
-      novaData.setDate(novaData.getDate() - 1);
-    } while (!ehSegQuaSex(novaData) || ehFeriado(novaData));
-  }
-
-  if (datasIguais(novaData, referenciaHoje)) {
-    novaData = proximoSegQuaSex(novaData);
-  }
-
-  return novaData;
+  return dias;
 }
 
-function formatarDataInput(data) {
-  return data.toISOString().split("T")[0];
+function parseDataBR(dataStr) {
+  const partes = dataStr.split("/");
+  if (partes.length !== 3) return null;
+
+  const [dia, mes, ano] = partes.map(p => parseInt(p, 10));
+  if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return null;
+
+  const data = new Date(ano, mes - 1, dia);
+  return (data.getDate() === dia && data.getMonth() === mes - 1 && data.getFullYear() === ano) ? data : null;
 }
 
+function formatarDataInputBR(data) {
+  const dia = String(data.getDate()).padStart(2, "0");
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const ano = data.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
 
 function verificarQtdLinhas() {
   const tabelaAlvo = $('input#inpnumeroDaParcela').closest('table');
   const qtdLinhas = tabelaAlvo.find('tbody tr').length - 1;
   const qtdParcelas = $("#inpqtdParcelas").val();
   const codigoDaCondicao = $("#inpcodigoDaCondicaoPagamento").val();
-  if (qtdParcelas != "" && codigoDaCondicao != "") {
+
+  if (qtdParcelas && codigoDaCondicao) {
     tabelaAlvo.find('#btnInsertNewRow').prop('disabled', qtdLinhas >= qtdParcelas);
   }
 }
