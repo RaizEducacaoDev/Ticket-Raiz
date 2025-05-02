@@ -104,6 +104,10 @@
     transition: all 0.3s ease;
 }
 
+.card-body::hover {
+    border: 1px solid #f08800;
+}
+
 .card-body::before {
     content: "";
     position: absolute;
