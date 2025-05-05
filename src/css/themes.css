@@ -1,0 +1,796 @@
+/******************** VARIÁVEIS DE CORES ********************/
+:root {
+    /* Cores principais do sistema */
+    --cor-primaria: #f08700;
+    /* Laranja - cor primária da marca */
+    --cor-primaria-clara: #f7c17b;
+    /* Laranja claro para efeitos hover e focus */
+    --cor-primaria-escura: #e27400;
+    /* Laranja escuro para estados ativos */
+
+    /* Cores secundárias */
+    --cor-secundaria: #7ac5bf;
+    /* Verde água - cor secundária da marca */
+    --cor-secundaria-clara: #b2dad6;
+    /* Verde água claro para efeitos hover */
+    --cor-secundaria-escura: #3ac5ba;
+    /* Verde água escuro para estados ativos */
+
+    /* Cores neutras */
+    --cor-branco: #f2f7f8;
+    /* Branco levemente azulado para fundos */
+    --cor-fundo-claro: #f2f7f8;
+    /* Cor de fundo no tema claro */
+
+    /* Cores para tema escuro */
+    --cor-fundo-escuro: #313131;
+    /* Cinza escuro para fundo no tema escuro */
+    --cor-texto-escuro: #e0e0e0;
+    /* Cinza claro para texto no tema escuro */
+    --cor-componente-escuro: #1b1b1b;
+    /* Preto para componentes no tema escuro */
+    --cor-input-escuro: #3a3a3a;
+    /* Cinza para inputs no tema escuro */
+    --cor-borda-escura: rgba(255, 255, 255, 0.05);
+    /* Borda sutil para tema escuro */
+}
+
+/******************** ESTILOS GLOBAIS ********************/
+.badge-success {
+    background-color: var(--cor-secundaria) !important;
+}
+
+.btn-link {
+    color: var(--cor-primaria) !important;
+}
+
+.brand-img {
+    height: 80%;
+}
+
+.btn-terciaria {
+    background-color: var(--cor-secundaria) !important;
+    color: var(--cor-branco) !important;
+    border: solid 1px var(--cor-branco) !important;
+}
+
+/******************** CONFIGURAÇÃO DO TEMA ESCURO ********************/
+body.tema-escuro {
+    /* Configurações básicas do tema escuro */
+    background-color: var(--cor-fundo-escuro);
+    color: var(--cor-texto-escuro);
+
+    /* Componentes com fundo escuro */
+    .box,
+    padded,
+    .menu,
+    #aHeaderMenuHomeLogo,
+    .page-title.secondary-font,
+    .bg-white,
+    .list-group *,
+    #containeractionbutton,
+    .btn-outline-secondary,
+    #containerRequests .card,
+    #containerRequests .card button,
+    .floating-top-bar {
+        background-color: var(--cor-componente-escuro) !important;
+        color: var(--cor-branco) !important;
+        box-shadow: 0 4px 10px var(--cor-borda-escura);
+    }
+
+    .floating-top-bar a,
+    .floating-top-bar a:focus {
+        color: var(--cor-primaria)
+    }
+
+    .floating-top-bar a:focus,
+    .floating-top-bar a.active {
+        background-color: var(--cor-primaria-clara) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    /* Campos de entrada no tema escuro */
+    input,
+    textarea,
+    select,
+    input:focus,
+    textarea:focus,
+    select:focus {
+        background-color: var(--cor-input-escuro);
+        color: var(--cor-branco) !important;
+        border: solid 0.1rem var(--cor-componente-escuro) !important;
+    }
+
+    /* Elementos de tabela e barra de ferramentas */
+    .table,
+    .buttons,
+    .toolbar,
+    #aHeaderMenuHomeName,
+    .container-task #controllers,
+    #mobileTabContent,
+    .app-card-desktop .card {
+        background-color: var(--cor-componente-escuro) !important;
+    }
+
+    #mobileTabContent hr {
+        border-top: solid 2px #494c4d;
+    }
+
+    .dropdown-menu {
+        background-color: var(--cor-componente-escuro) !important;
+        border: solid 0.1rem var(--cor-branco);
+    }
+
+    .dropdown-item:hover {
+        background-color: var(--cor-primaria);
+    }
+
+    .login {
+        background-color: var(--cor-fundo-escuro) !important;
+    }
+
+    /* Componentes específicos */
+    #cboxContent,
+    #cboxContent .btn-secondary,
+    .page-title {
+        background-color: var(--cor-componente-escuro) !important;
+    }
+
+    #cboxLoadedContent canvas {
+        background-color: var(--cor-fundo-escuro) !important;
+    }
+
+    #cboxLoadedContent .btn-link {
+        color: var(--cor-primaria) !important;
+    }
+
+    #frm .padded .box {
+        background-color: var(--cor-componente-escuro) !important;
+        border-color: var(--cor-componente-escuro) !important;
+        box-shadow: none !important;
+    }
+
+    #frm .padded .box {
+        color: var(--cor-branco) !important;
+    }
+
+    #PanelFlowDesigner .box-header {
+        background-color: var(--cor-secundaria-clara);
+        color: #000 !important;
+
+    }
+
+    #PanelStep table tbody tr td {
+        background-color: var(--cor-componente-escuro) !important;
+    }
+
+    .box-header h2 {
+        color: var(--cor-branco) !important;
+    }
+
+    #frm .padded .box #ifrDesigner {
+        filter: invert(0.9) !important;
+    }
+
+    #cboxLoadedContent .btn-secondary:hover,
+    #cboxLoadedContent .btn-secondary:active,
+    #cboxLoadedContent .btn-secondary:focus {
+        color: var(--cor-branco) !important;
+        box-shadow: 0 0 0 .15rem var(--cor-primaria) !important;
+    }
+
+    /* Templates e modais */
+    #mapp-templates .modal-content {
+        background-color: var(--cor-fundo-escuro) !important;
+    }
+
+    #mapp-templates header {
+        background-color: var(--cor-componente-escuro) !important;
+
+        h1 {
+            color: var(--cor-branco) !important;
+        }
+    }
+
+    .template-finder-card,
+    .template-finder-card .btn-secondary {
+        background-color: var(--cor-componente-escuro) !important;
+    }
+
+    /* Barra lateral */
+    aside,
+    aside .btn-secondary,
+    .rc-anchor-container *,
+    .rc-anchor-content, .title {
+        background-color: var(--cor-componente-escuro) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    aside .text-truncate,
+    #mobileTabContent *,
+    .app-card-desktop .card {
+        color: var(--cor-branco);
+    }
+
+    aside .nav-item:hover *,
+    aside .nav-item:active *,
+    aside .nav-item:focus * {
+        color: #000 !important;
+    }
+
+    .btn-secondary:not(:disabled):not(.disabled).active,
+    .btn-secondary:not(:disabled):not(.disabled):active,
+    .show>.btn-secondary.dropdown-toggle,
+    .btn-secondary:focus * {
+        background-color: var(--cor-input-escuro) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    /* Seletores e formulários */
+    .selectr-selected,
+    .selectr-input-container,
+    .selectr-input {
+        background-color: var(--cor-input-escuro) !important;
+        border: solid 0.1rem var(--cor-componente-escuro) !important;
+    }
+
+    .selectr-option {
+        background-color: var(--cor-input-escuro);
+    }
+
+    .form-separator div {
+        border-color: #494c4d !important;
+    }
+
+    /* Cabeçalhos de tabela */
+    thead * {
+        background-color: var(--cor-componente-escuro) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    /* Botões secundários */
+    .btn-secondary,
+    .btn-secondary:focus {
+        background-color: var(--cor-componente-escuro) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    /* Containers específicos */
+    #containerRequest .page-title * {
+        color: var(--cor-branco) !important;
+    }
+
+    .container-task #commands * {
+        color: var(--cor-branco) !important;
+    }
+
+    #containerTeams,
+    .container-task aside {
+        background-color: var(--cor-fundo-escuro) !important;
+    }
+
+    /* Bordas de células da tabela */
+    td {
+        border-top: solid 1px #dee2e6 !important;
+    }
+
+    #FrmExecute td {
+        border-top: none !important;
+    }
+
+    /* Regras globais para elementos com base branca */
+    .menu *,
+    .bg-white,
+    .list-group,
+    .table,
+    label,
+    .text-muted,
+    .brand-img *,
+    #containerRequests .card .card-title,
+    #containerRequests .card .ico-plus,
+    #containerRequests.card.card-title *,
+    #containerRequests.card.ico-plus *,
+    #containerRequests.card.card-title *:hover,
+    #containerRequests.card.ico-plus *:hover,
+    #containerRequests.card.card-title *:focus {
+        color: var(--cor-branco) !important;
+    }
+
+    #btnCreateApp h5 {
+        color: var(--cor-primaria);
+    }
+
+    /* Estados de interação para links do menu */
+    .menu .nav-link:hover,
+    .menu .nav-link:focus,
+    .menu .nav-link:active,
+    .menu .nav-link:hover *,
+    .menu .nav-link:focus *,
+    .menu .nav-link:active * {
+        color: black !important;
+    }
+
+    /* Ajustes para ícones SVG em estados de interação */
+    .menu .nav-link:hover svg,
+    .menu .nav-link:focus svg,
+    .menu .nav-link:active svg,
+    .menu .nav-link:hover svg *,
+    .menu .nav-link:focus svg *,
+    .menu .nav-link:active svg * {
+        fill: black !important;
+        stroke: black !important;
+    }
+
+    /* Estado ativo para itens de menu selecionados */
+    .menu .nav-link.active,
+    .menu .nav-link.active *:not(svg):not(svg *) {
+        color: black !important;
+    }
+
+    .menu .nav-link.active svg * {
+        color: black !important;
+        fill: black !important;
+        stroke: black !important;
+    }
+
+    /* Indicador de campo obrigatório */
+    .required {
+        color: #dc3545 !important;
+    }
+
+    /* Divisor de menu */
+    .menu-divider {
+        background-color: #494c4d !important;
+    }
+
+    .selectr-placeholder {
+        color: var(--cor-branco) !important;
+    }
+
+    /* Modais */
+    .modal-content {
+        background-color: var(--cor-componente-escuro);
+    }
+
+    .modal-content .modal-header,
+    .modal-content .modal-footer {
+        border: none !important;
+    }
+
+    #containerFiles #fileOrder:focus {
+        box-shadow: 0 0 0 .15rem var(--cor-primaria) !important;
+    }
+}
+
+/******************** CABEÇALHO DA APLICAÇÃO ********************/
+.navbar {
+    /* Cor de fundo do cabeçalho */
+    background: var(--cor-primaria) !important;
+
+    /* Elementos de texto e ícones do cabeçalho */
+    #aHeaderMenuHomeName,
+    #themeIcon *,
+    .ico-sparkles,
+    .ico-bell,
+    .notification-icon,
+    .ico-help,
+    .shortcut {
+        color: var(--cor-branco) !important;
+    }
+
+    /* Botão principal do cabeçalho */
+    #btnHeaderMenuNew {
+        background-color: var(--cor-primaria) !important;
+        border-color: var(--cor-branco) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    /* Estados de interação do botão principal */
+    #btnHeaderMenuNew:focus,
+    #btnHeaderMenuNew:hover,
+    #btnHeaderMenuNew:active {
+        background-color: var(--cor-secundaria) !important;
+        border-color: var(--cor-branco) !important;
+        color: var(--cor-branco) !important;
+        box-shadow: 0 0 0 .15rem var(--cor-secundaria) !important;
+    }
+
+    /* Estados de interação para botões de notificação e ajuda */
+    #aHeaderMenuOpenCloseNotifications:focus,
+    #aHeaderMenuOpenCloseNotifications:hover,
+    #aHeaderMenuOpenCloseNotifications:active,
+    #aHeaderMenuHelp:focus,
+    #aHeaderMenuHelp:hover,
+    #aHeaderMenuHelp:active,
+    #toggleThemeBtn:hover,
+    #toggleThemeBtn:active,
+    #open-zai-chat:focus,
+    #open-zai-chat:hover,
+    #open-zai-chat:active {
+        background-color: var(--cor-secundaria) !important;
+        box-shadow: 0 0 0 .15rem var(--cor-secundaria) !important;
+
+        /* Contador de notificações */
+        .notification-count {
+            background-color: var(--cor-primaria) !important;
+        }
+    }
+
+    /* Ícones do cabeçalho */
+    .ico-header-menu,
+    .ico-right,
+    .ico-left {
+        color: var(--cor-branco) !important;
+    }
+
+    /* Estilização do nome do sistema no cabeçalho */
+    #aHeaderMenuHomeName {
+        background-color: var(--cor-branco) !important;
+        margin-left: 3px;
+        border: 0px !important;
+    }
+
+    /* Parte "ticket" do logo */
+    #aHeaderMenuHomeName::before {
+        content: "ticket";
+        color: #f08700;
+        font: bold 25px sans-serif;
+    }
+
+    /* Parte "raiz" do logo */
+    #aHeaderMenuHomeName::after {
+        content: "raiz";
+        color: #7ac5bf;
+        font: bold 25px sans-serif;
+    }
+
+    /* Estado hover do logo */
+    #aHeaderMenuHomeName:hover {
+        box-shadow: 0 0 0.3rem #3a3939 !important;
+        text-decoration: none;
+    }
+
+    /* Ajustes responsivos para dispositivos móveis */
+    @media (max-width: 991.98px) {
+        h3.text-uppercase.bold.d-block.d-lg-none.text-truncate {
+            display: block;
+            width: 160px;
+            height: 60px;
+            background-image: url('https://raizeducacao.zeev.it/systemlogo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            color: transparent;
+            text-indent: -9999px;
+            position: relative;
+
+            /* Texto "Início" abaixo do logo */
+            &::after {
+                content: 'Início';
+                position: absolute;
+                bottom: -20px;
+                left: 0;
+                color: #000;
+                text-indent: 0;
+                display: block;
+                font-size: 14px;
+            }
+        }
+    }
+}
+
+/******************** MENU LATERAL ********************/
+.menu {
+
+    /* Item ativo no menu */
+    .active {
+        background-color: var(--cor-secundaria-clara) !important;
+
+        .badge {
+            background-color: var(--cor-primaria) !important;
+        }
+    }
+
+    /* Estados de interação para links do menu */
+    .nav-link:hover,
+    .nav-link:focus,
+    .nav-link:active {
+        background-color: var(--cor-secundaria-clara) !important;
+
+        /* Contador de tarefas */
+        .tasks-total-count {
+            background-color: var(--cor-primaria) !important;
+        }
+    }
+}
+
+/******************** TELA DO RELATORIO ********************/
+.pull-right *{
+    color: var(--cor-primaria)!important;
+}
+.nav .dropdown-toggle .caret {
+    border-top-color: var(--cor-primaria)!important;
+    border-bottom-color: var(--cor-primaria)!important;
+}
+
+li.dropdown:hover ul.dropdown-menu a:hover, li.dropdown:hover ul.dropdown-menu a:focus, li.dropdown:hover ul.dropdown-menu a:active {
+    background-color: var(--cor-primaria)!important;
+    color: var(--cor-branco)!important;
+    background-image: none!important;
+}
+
+.nav > li > a:hover, .nav > li > a:focus, .nav > li > a:active {
+    background-color: var(--cor-primaria)!important;
+    color: var(--cor-branco)!important;
+    .caret{
+        border-top-color: var(--cor-branco)!important;
+        border-bottom-color: var(--cor-branco)!important;
+    }
+}
+#DivChangeRequester .btn.btn-small.btn-info,
+#DivChangeRequester .btn.btn-small.btn-info:hover,
+#DivChangeRequester.btn.btn-small.btn-info:active,
+#DivChangeRequester.btn.btn-small.btn-info:focus {
+    background-color: var(--cor-primaria) !important;
+    border-color: var(--cor-branco) !important;
+    background-image: none !important;
+}
+
+#PanelStep .box-header .row-fluid a {
+    color: var(--cor-primaria) !important;
+}
+
+#PanelForm a {
+    color: var(--cor-primaria) !important;
+}
+
+#PanelForm a {
+    color: var(--cor-primaria) !important;
+}
+
+#PanelForm input:focus,
+#PanelForm textarea:focus,
+#PanelForm select:focus {
+    box-shadow: 0 0 0 .15rem var(--cor-primaria-clara) !important;
+    border: solid 1px var(--cor-primaria) !important;
+}
+
+table.form tr td.group {
+    color: var(--cor-primaria) !important;
+}
+
+#PanelStep table tbody tr td a,
+#PanelStep table tbody tr td .LkStepClose {
+
+    color: var(--cor-primaria);
+
+}
+
+#divFile .alert {
+    background-color: var(--cor-secundaria-clara);
+    color: #000;
+}
+
+#link-see-all-docs, #link-see-all-docs:hover, #link-see-all-docs:focus, #link-see-all-docs:active  {
+    background-color: var(--cor-secundaria);
+    background-image: none!important;
+    color: var(--cor-branco);
+    border: solid 1px var(--cor-branco);
+}
+
+/******************** TELA DE TEMPLATES ********************/
+.active>.text-truncate {
+    color: var(--cor-primaria) !important;
+}
+
+.template-finder-card:hover {
+    border: solid 1px var(--cor-primaria) !important;
+}
+
+.template-finder-card .text-primary {
+    color: var(--cor-primaria) !important;
+}
+
+#mapp-templates aside .nav-link:hover {
+    background-color: var(--cor-secundaria-clara);
+    color: #000;
+}
+
+/******************** CORPO DA APLICAÇÃO ********************/
+body {
+    /* Cor de fundo padrão */
+    background: var(--cor-fundo-claro);
+
+    /******************** TELA DE CONFIGURAÇÕES DE USUÁRIO ********************/
+    /* Link de remoção */
+    #linkRemove {
+        color: var(--cor-primaria) !important;
+    }
+
+    /* Botões primários e estados de interação */
+    .btn-primary,
+    #btnUserAbsentSave,
+    #btnUserAbsentSave:disabled,
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active,
+    #btnHeaderMenuNew:focus,
+    #btnHeaderMenuNew:hover,
+    #btnHeaderMenuNew:active {
+        background-color: var(--cor-primaria) !important;
+        border-color: var(--cor-branco) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    /* Botão de configuração de assinatura */
+    #btnConfigSignature {
+        background-color: var(--cor-secundaria) !important;
+        border-color: var(--cor-branco) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    /* Estado de foco para botões */
+    .btn:focus {
+        box-shadow: 0 0 0 .15rem var(--cor-primaria) !important;
+    }
+
+    .btn-tertiary:focus {
+        box-shadow: 0 0 0 .15rem var(--cor-primaria) !important;
+    }
+
+    .btn-tertiary.disabled,
+    .btn-tertiary:disabled,
+    .btn-tertiary {
+        background-color: var(--cor-secundaria) !important;
+        border: solid 1px var(--cor-branco) !important;
+    }
+
+    #commands .badge {
+        background-color: var(--cor-primaria);
+    }
+
+    /* Estado de foco para campos de formulário */
+    .form-control:focus {
+        box-shadow: 0 0 0 .15rem var(--cor-primaria-clara) !important;
+        border: solid 1px var(--cor-primaria) !important;
+    }
+
+    /******************** TELA DE EXECUÇÃO ********************/
+    .selectr-option.active,
+    .selectr-option:hover {
+        background-color: var(--cor-primaria) !important;
+    }
+
+    .selectr-selected:focus,
+    .selectr-input:focus {
+        box-shadow: 0 0 0 .15rem var(--cor-primaria-clara) !important;
+        border: solid 1px var(--cor-primaria) !important;
+    }
+
+    .selectr-tag {
+        background-color: var(--cor-secundaria-clara) !important;
+        color: #000 !important;
+    }
+
+    /* Estilos para checkbox */
+    .custom-checkbox .custom-control-input:active~.custom-control-label:before {
+        background-color: var(--cor-primaria-clara) !important;
+    }
+
+    .custom-checkbox .custom-control-input:checked~.custom-control-label:before {
+        background-color: var(--cor-primaria) !important;
+        border: solid 1px var(--cor-primaria) !important;
+    }
+
+    .custom-checkbox .custom-control-input:focus~.custom-control-label:before {
+        background-color: var(--cor-primaria) !important;
+        box-shadow: 0 0 0 .15rem var(--cor-primaria-clara) !important;
+        border: solid 1px var(--cor-primaria) !important;
+    }
+
+    #filterReport h5 {
+        color: var(--cor-primaria);
+    }
+
+    /* Estilos para tabelas */
+    .table-hover tbody tr:focus {
+        border: solid 0.19rem var(--cor-primaria-clara) !important;
+        box-shadow: 0 0 0.19rem var(--cor-primaria) !important;
+    }
+
+    .table-hover tbody tr:hover td,
+    .table tbody tr:hover th {
+        background-color: var(--cor-secundaria-clara) !important;
+    }
+
+    /******************** TELA DE ASSINATURA ********************/
+    #containerSignature {
+
+        /* Alertas informativos */
+        .alert-info {
+            background-color: var(--cor-secundaria) !important;
+            border-color: var(--cor-secundaria) !important;
+            color: var(--cor-branco) !important;
+        }
+
+        /* Estados de interação para alertas */
+        .alert-info:focus,
+        .alert-info:hover,
+        .alert-info:active {
+            background-color: var(--cor-secundaria-escuro) !important;
+            border-color: var(--cor-secundaria-escuro) !important;
+            color: var(--cor-branco) !important;
+        }
+    }
+
+    /******************** TELA DE FORMULARIO ********************/
+    .customFormMessages .btn-terciaria.disabled,
+    .btn-terciaria:disabled {
+        background-color: var(--cor-secundaria) !important;
+    }
+
+    #containerOtherActors #btnAssumeTask {
+        background-color: var(--cor-secundaria) !important;
+        border: solid 1px var(--cor-branco) !important;
+        color: var(--cor-branco) !important;
+    }
+
+    #containerOtherActors #btnAssumeTask:active {
+        /* border: solid 0.19rem var(--cor-principal-claro) !important; */
+        box-shadow: 0 0 0 .15rem var(--cor-primaria) !important;
+    }
+
+    /******************** TELA DE INICIAR APLICATIVO ********************/
+    #containerAllTeamsRender .nav-item *,
+    #containerMostAccessedTeamsRender .nav-item * {
+        color: var(--cor-primaria);
+    }
+
+    #containerAllTeamsRender .nav-item *:hover,
+    #containerAllTeamsRender .nav-item *:active,
+    #containerAllTeamsRender .nav-item *:focus,
+    #containerAllTeamsRender .nav-item .nav-link.active,
+    #containerMostAccessedTeamsRender .nav-item *:hover,
+    #containerMostAccessedTeamsRender .nav-item *:active,
+    #containerMostAccessedTeamsRender .nav-item *:focus,
+    #containerMostAccessedTeamsRender .nav-item .nav-link.active {
+        color: var(--cor-branco) !important;
+        background-color: var(--cor-primaria);
+    }
+
+    #btnCreateApp h5 {
+        color: var(--cor-primaria);
+    }
+
+    #btnCreateApp .ico-plus {
+        color: #000 !important;
+    }
+
+    #containerRequests .card:hover {
+        box-shadow: 0 0 0 .05rem var(--cor-primaria) !important;
+    }
+
+    #containerRequests .card-body {
+        position: relative;
+        padding: 20px;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        animation: growFromCenter 1s ease-in-out forwards;
+        transition: all 0.3s ease;
+    }
+
+    /* #containerRequests .card-body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('https://i.postimg.cc/c18WVWQB/Logo-raiz-cor.png');
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.1;
+        z-index: 0;
+    } */
+}
