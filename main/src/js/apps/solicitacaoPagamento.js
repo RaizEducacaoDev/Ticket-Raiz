@@ -15,11 +15,11 @@ $(document).ready(function () {
     setTimeout(verificarQtdLinhas, 10);
   });
 
-  $(document).on('change', '#inptipoDaSolicitacao', function () {
+  $(document).on('change', '#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor, #inptipoDoLocador', function () {
     defineCodigoDoMovimento();
   });
 
-  $('#inptipoDoLocador', '#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor', '#inptipoDoLocador').on('change', function () {
+  $('#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor', '#inptipoDoLocador').on('change', function () {
     defineCodigoDoMovimento();
   });
 
