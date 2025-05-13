@@ -19,7 +19,7 @@ $(document).ready(function () {
     defineCodigoDoMovimento();
   });
 
-  $('#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor').on('change', function () {
+  $('#inptipoDoLocador', '#inptipoDaSolicitacao, #inptipoDoPagamento, #inpcontasDeConsumo, #inptipoDeItem, #inpoutrosGastos, #inpcentroDeCusto, #inpnaturezaOrcamentaria, #inpfornecedor', '#inptipoDoLocador').on('change', function () {
     defineCodigoDoMovimento();
   });
 
@@ -79,7 +79,7 @@ function defineCodigoDoMovimento() {
       } else if (tipoDoPagamento === "OG") {
         const outrosGastos = $("#inpoutrosGastos").val();
         const tipoLocador = $("#inptipoDoLocador").val();
-        if (outrosGastos === "RF") {
+        if (outrosGastos === "FR") {
           $("#inpserie").val("1");
           $("#inpcodigoDoMovimento").val("1.2.16");
         } else if (outrosGastos === "AL") {
