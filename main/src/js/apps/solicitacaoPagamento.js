@@ -86,7 +86,7 @@ function defineCodigoDoMovimento() {
           if (tipoLocador === "Pessoa Jurídica") {
             $("#inpserie").val("ALPJ");
             $("#inpcodigoDoMovimento").val("1.2.17");
-          } else if (tipoLocador === "Pessoa Fisica") {
+          } else if (tipoLocador === "Pessoa Física") {
             $("#inpserie").val("ALPF");
             $("#inpcodigoDoMovimento").val("1.2.08");
           }
