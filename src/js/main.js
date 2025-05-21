@@ -203,7 +203,7 @@ async function validaPendencias() {
         jq.each(items, function (index, item) {
           const dataDte = converteParaDate(item.dte);
           const diferencaDias = Math.floor((dataAtual - dataDte) / (1000 * 60 * 60 * 24));
-          const regex = /corrigir|correção/i;
+          const regex = /corrigir|correção|validar\s+comprovante/i;
 
           if (diferencaDias >= 7 && regex.test(item.t)) {
             count++;
@@ -211,7 +211,7 @@ async function validaPendencias() {
         });
 
         if (count > 0) {
-          mostrarAlerta('danger', 'Atenção', `Você ainda possui ${count} solicitações paradas na etapa de correção, não será possível abrir novas solicitações até que resolva suas pendências.`);
+          mostrarAlerta('danger', 'Atenção', `Existem ${count} pendências em aberto. Para prosseguir com novas solicitações, é necessário resolvê-las primeiro.`);
         } else {
           jq('#colorbox, #modalOverlay').remove();
           jq('body').css({ pointerEvents: 'auto', overflow: 'auto' });
