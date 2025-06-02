@@ -182,12 +182,14 @@ function formatarDataInputBR(data) {
 }
 
 function verificarQtdLinhas() {
-  const tabelaAlvo = $('input#inpnumeroDaParcela').closest('table');
+  const tabelaAlvo = $('table:has(> caption:contains("Parcelas"))');
   const qtdLinhas = tabelaAlvo.find('tbody tr').length - 1;
-  const qtdParcelas = $("#inpqtdParcelas").val();
-  const codigoDaCondicao = $("#inpcodigoDaCondicaoPagamento").val();
+  const qtdParcelas = Number($('#inpqtdParcelas').val()) || 0;
+  const codigoDaCondicao = $('#inpcodigoDaCondicaoPagamento').val();
 
   if (qtdParcelas && codigoDaCondicao) {
-    tabelaAlvo.find('#btnInsertNewRow').prop('disabled', qtdLinhas >= qtdParcelas);
+    tabelaAlvo
+      .find('button#btnInsertNewRow')
+      .prop('disabled', qtdLinhas >= qtdParcelas);
   }
 }
