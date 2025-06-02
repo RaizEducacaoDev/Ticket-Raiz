@@ -25,7 +25,7 @@ function mostrarAlerta(type, title, message, duration = 5000) {
             <div class="alert-title">${title}</div>
             <div class="alert-message">${message}</div>
         </div>
-        <button class="close-btn" onclick="removeAlert(this.parentElement)">×</button>
+        <button class="close-btn" onclick="removerAlerta(this.parentElement)">×</button>
     `;
 
   alertContainer.appendChild(alert);
