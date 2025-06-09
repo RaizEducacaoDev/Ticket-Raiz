@@ -52,7 +52,7 @@ jq(document).ready(function () {
 
       jq('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
-      var aprovadores = [1890]
+      var aprovadores = [1890, 1885]
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
       jq('.task-check-action').change(function () {
@@ -132,7 +132,7 @@ jq(document).ready(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
 
-            var aprovadores = [1890]
+            var aprovadores = [1890, 1885]
             var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
             jq('.task-check-action').change(function () {
