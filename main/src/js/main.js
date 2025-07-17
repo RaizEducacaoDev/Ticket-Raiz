@@ -73,7 +73,7 @@ jq(document).ready(function () {
 
       break;
     case `${dominio}/my/services`:
-      verificaAtrasos(dominio);
+      //verificaAtrasos(dominio);
       break;
   }
 
