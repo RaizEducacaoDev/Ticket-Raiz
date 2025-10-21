@@ -52,7 +52,7 @@ jq(document).ready(function () {
 
       jq('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
-      var aprovadores = [1890, 1885, 1894, 4130, 1959]
+      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897]
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
       jq('.task-check-action').change(function () {
