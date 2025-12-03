@@ -306,6 +306,20 @@ async function processaMovimentacao(id, result, reason) {
     return response;
   } catch (error) {
     console.error(`Erro ao processar tarefa:`, error);
+    
+    // Objeto bruto
+    console.log("Erro bruto:", error);
+
+    // Status HTTP
+    console.log("Status:", error.status);
+
+    // Texto da resposta (string)
+    console.log("ResponseText:", error.responseText);
+
+    // Se o jQuery já tiver parseado o JSON
+    if (error.responseJSON) {
+      console.log("ResponseJSON:", error.responseJSON);
+    }
     return null;  // Retorna null em caso de erro
   }
 }
