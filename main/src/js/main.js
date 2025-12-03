@@ -52,7 +52,7 @@ jq(document).ready(function () {
 
       jq('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
-      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5243] //5243 é o usuário da amanda.conceicao no ambiente de hml
+      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240] //5240 é o usuário para teste no ambiente de hml
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
       jq('.task-check-action').change(function () {
