@@ -261,7 +261,7 @@ async function movimentaTarefas(decisao) {
       const reason = decisao ? "Aprovado" : "Reprovado";
       const response = await processaMovimentacao(task.taskNumber, result, reason);
       
-      if (response) {
+      if (response!==null) {
         successTasks.push(task.taskId);
       } else {
         failedTasks.push(task.taskId);
