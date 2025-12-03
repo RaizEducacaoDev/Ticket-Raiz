@@ -195,6 +195,7 @@ async function validaPendencias() {
 
     if (response.ok) {
       const data = await response.json();
+      console.log (data)
       if (data.success && data.success.itens && data.success.itens.length > 0) {
         const items = data.success.itens;
         const dataAtual = new Date();
@@ -243,6 +244,7 @@ async function movimentaTarefas(decisao) {
       }
       return null;
     }).get().filter(task => task !== null);
+    console.log("Tarefas selecionadas para processamento:", tasks);
     
     const totalTasks = tasks.length;
     
