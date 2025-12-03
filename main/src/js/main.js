@@ -293,7 +293,7 @@ async function movimentaTarefas(decisao) {
 
 async function processaMovimentacao(id, result, reason) {
   try {
-    let token = await buscaToken();  // Aguardar o token antes de enviar a requisição
+    let token = "3L25V9T4uH1jsxDq26qRMfL7kozzyBiyinKJUpNO9VmwD2iaIyLRDMeMgBre3fBdpTl4wQ5xHiPJqcJKSNlXRq%2F2GFFt4iYiB5u3w9oWBS8jBIdwcIEtwOBpAf5kau7lBJAMBcE8dpjRyLCRSOvsVQ%3D%3D";  // Aguardar o token antes de enviar a requisição
 
     const response = await jq.ajax({
       url: `${window.location.origin}/api/2/assignments/${id}`,
