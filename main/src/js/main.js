@@ -163,7 +163,7 @@ function addActionRow() {
       </div>
     </div>`;
 
-  jq("#containerLoadMore").after(newRow);
+  jq("#containerActions").prepend(newRow);
 
   jq("#btnApproveTasks").off("click").on("click", movimentaTarefas.bind(null, true));
   jq("#btnRejectTasks").off("click").on("click", movimentaTarefas.bind(null, false));
