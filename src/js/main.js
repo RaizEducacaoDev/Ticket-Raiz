@@ -132,7 +132,7 @@ jq(document).ready(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
 
-            var aprovadores = [1890, 1885, 1894, 4130, 1959]
+            var aprovadores = [1890, 1885, 1894, 4130, 1959,1888,4101]
             var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
             jq('.task-check-action').change(function () {
