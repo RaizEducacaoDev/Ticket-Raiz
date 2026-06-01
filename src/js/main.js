@@ -157,8 +157,8 @@ jq(document).ready(function () {
 function addActionRow() {
   const newRow = `
     <div id="containerButton" class="d-none" style="display: flex; align-items: center;">
-      <button type="button" id="btnApproveTasks" class="btn btn-success ml-3" style="width: 33%;">Aprovar Tarefas</button>
-      <button type="button" id="btnRejectTasks" class="btn btn-danger ml-3" style="width: 33%; display: none;">Reprovar Tarefas</button>
+       <button type="button" id="btnApproveTasks" class="btn btn-success ml-3" style="white-space: nowrap;">Aprovar Tarefas</button>
+      <button type="button" id="btnRejectTasks" class="btn btn-danger ml-3" style="white-space: nowrap; display: none;">Reprovar Tarefas</button>
     </div>`;
 
   jq("#containerActions .input-group").prepend(newRow);
