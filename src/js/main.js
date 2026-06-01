@@ -156,14 +156,12 @@ jq(document).ready(function () {
 
 function addActionRow() {
   const newRow = `
-    <div id="containerButton" class="d-none box p-3 bg-light">
-      <div class="input-group" style="display: flex; justify-content: space-around;">
-        <button type="button" id="btnApproveTasks" class="btn btn-success ml-3" style="width: 33%;">Aprovar Tarefas</button>
-        <button type="button" id="btnRejectTasks" class="btn btn-danger ml-3" style="width: 33%; display: none;">Reprovar Tarefas</button>
-      </div>
+    <div id="containerButton" class="d-none" style="display: flex; align-items: center;">
+      <button type="button" id="btnApproveTasks" class="btn btn-success ml-3" style="width: 33%;">Aprovar Tarefas</button>
+      <button type="button" id="btnRejectTasks" class="btn btn-danger ml-3" style="width: 33%; display: none;">Reprovar Tarefas</button>
     </div>`;
 
-  jq("#containerActions").prepend(newRow);
+  jq("#containerActions .input-group").prepend(newRow);
 
   jq("#btnApproveTasks").off("click").on("click", movimentaTarefas.bind(null, true));
   jq("#btnRejectTasks").off("click").on("click", movimentaTarefas.bind(null, false));
