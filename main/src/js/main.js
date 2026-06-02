@@ -55,19 +55,20 @@ jq(document).ready(function () {
       var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240,1888,4101] //5240 é o usuário para teste no ambiente de hml
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
-      jq('.task-check-action').change(function () {
+      jq(document).on('change', '.task-check-action', function () {
         if (aprovadores.includes(usuarioLogado)) {
           const isChecked = jq('.task-check-action:checked').length > 0;
           isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
         }
       });
 
-      jq('#checkbox-header').change(function () {
+      jq(document).on('change', '#checkbox-header', function () {
         const isChecked = jq(this).prop('checked');
         jq('.task-check-action').prop('checked', isChecked);
         if (aprovadores.includes(usuarioLogado)) {
-          const isChecked = jq('.task-check-action:checked').length > 0;
-          isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
+           jq('.task-check-action:checked').length > 0
+            ? jq("#containerButton").removeClass("d-none")
+            : jq("#containerButton").addClass("d-none");
         }
       });
 
@@ -132,28 +133,12 @@ jq(document).ready(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
 
-            var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240,1888,4101]
-            var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
-
-            jq('.task-check-action').off('change').on('change', function () {
-              if (aprovadores.includes(usuarioLogado)) {
-                const isChecked = jq('.task-check-action:checked').length > 0;
-                isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
-              }
-            });
+           
             if (jq('#checkbox-header').length === 0) {
               jq('.table-hover-pointer thead tr th:first')
                 .html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
-              jq('#checkbox-header').on('change', function () {
-                const isChecked = jq(this).prop('checked');
-                jq('.task-check-action').prop('checked', isChecked);
-                if (aprovadores.includes(usuarioLogado)) {
-                  jq('.task-check-action:checked').length > 0
-                    ? jq("#containerButton").removeClass("d-none")
-                    : jq("#containerButton").addClass("d-none");
-                }
-              });
+            
             }
             applyDNoneForMobile();
             break;
