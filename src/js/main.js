@@ -52,7 +52,7 @@ jq(document).ready(function () {
 
       jq('.table-hover-pointer thead tr th:first').html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
-      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240] //5240 é o usuário para teste no ambiente de hml
+      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240,1888,4101] //5240 é o usuário para teste no ambiente de hml
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
       jq('.task-check-action').change(function () {
@@ -132,16 +132,29 @@ jq(document).ready(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
 
-            var aprovadores = [1890, 1885, 1894, 4130, 1959,1888,4101]
+            var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240,1888,4101]
             var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
-            jq('.task-check-action').change(function () {
+            jq('.task-check-action').off('change').on('change', function () {
               if (aprovadores.includes(usuarioLogado)) {
                 const isChecked = jq('.task-check-action:checked').length > 0;
                 isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
               }
             });
+            if (jq('#checkbox-header').length === 0) {
+              jq('.table-hover-pointer thead tr th:first')
+                .html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
 
+              jq('#checkbox-header').on('change', function () {
+                const isChecked = jq(this).prop('checked');
+                jq('.task-check-action').prop('checked', isChecked);
+                if (aprovadores.includes(usuarioLogado)) {
+                  jq('.task-check-action:checked').length > 0
+                    ? jq("#containerButton").removeClass("d-none")
+                    : jq("#containerButton").addClass("d-none");
+                }
+              });
+            }
             applyDNoneForMobile();
             break;
         }
@@ -156,12 +169,12 @@ jq(document).ready(function () {
 
 function addActionRow() {
   const newRow = `
-    <div id="containerButton" class="d-none" style="display: flex; align-items: center;">
+    <div id="containerButton" class="d-none" style="display: flex; align-items: center; margin-left: auto">
        <button type="button" id="btnApproveTasks" class="btn btn-success ml-3" style="white-space: nowrap;">Aprovar Tarefas</button>
       <button type="button" id="btnRejectTasks" class="btn btn-danger ml-3" style="white-space: nowrap; display: none;">Reprovar Tarefas</button>
     </div>`;
 
-  jq("#containerActions .input-group").prepend(newRow);
+  jq("#containerActions .input-group").append(newRow);
 
   jq("#btnApproveTasks").off("click").on("click", movimentaTarefas.bind(null, true));
   jq("#btnRejectTasks").off("click").on("click", movimentaTarefas.bind(null, false));
