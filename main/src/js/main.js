@@ -57,7 +57,7 @@ jq(document).ready(function () {
         }
       }, 500);
 
-      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240,1888,4101] //5240 é o usuário para teste no ambiente de hml
+      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240,1888,4101, 7148] //5240 é o usuário para teste no ambiente de hml
       var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
 
       jq(document).on('change', '.task-check-action', function () {
