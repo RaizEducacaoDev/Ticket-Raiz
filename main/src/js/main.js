@@ -78,6 +78,11 @@ function escapeTaskMessage(value) {
     .replace(/'/g, "&#039;");
 }
 
+function createTaskSupportMessage() {
+  const supportUrl = "https://raizeducacao.zeev.it/2.0/request?c=nIGZbj%2BSflQVvsUdA5hVOmC4ZZr8GXW%2FThxNe7g52WrGa4yThcuEkqRqO5VT82klt906ee7Z6xOdQXtaVd20Pg%3D%3D";
+  return `Para solicitar suporte, acesse <a href="${supportUrl}" target="_blank" rel="noopener noreferrer"><strong>[Processos] Solicitações Ticket Raiz</strong></a>.`;
+}
+
 function showTaskModal(title, message, callback) {
   if (typeof mostrarModal === "function") {
     mostrarModal(title, message, callback);
@@ -470,19 +475,20 @@ async function movimentaTarefas(decisao) {
     const failureDetails = failedTasks.map((failure) => (
       `<strong>${escapeTaskMessage(failure.taskId)}</strong>: ${escapeTaskMessage(failure.error)}`
     )).join("<br>");
+    const supportMessage = createTaskSupportMessage();
 
     if (successCount > 0 && failureCount === 0) {
       showTaskModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
     } else if (successCount === 0 && failureCount > 0) {
-      showTaskModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`);
+      showTaskModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>${supportMessage}`);
     } else if (successCount > 0 && failureCount > 0) {
-      showTaskModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`);
+      showTaskModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>${supportMessage}`);
     }
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
     showTaskModal(
       "Erro!",
-      "Não foi possível concluir o processamento das tarefas.<br><br>Tente novamente ou entre em contato com o time responsável."
+      `Não foi possível concluir o processamento das tarefas.<br><br>${createTaskSupportMessage()}`
     );
   } finally {
     jq(".app-overlay").hide();
@@ -660,6 +666,7 @@ if (typeof module !== "undefined" && module.exports) {
     reconcileTaskSelectionIds,
     resolveZeevUserId,
     escapeTaskMessage,
+    createTaskSupportMessage,
     extractMovementError,
     createAssignmentPayload,
     movimentaTarefas,
