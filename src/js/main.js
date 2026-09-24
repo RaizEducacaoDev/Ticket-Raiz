@@ -250,6 +250,9 @@ if (typeof jq !== "undefined") {
           jq(this).prop("checked", isChecked);
           taskSelectionState.set(getTaskAssignmentId(this), isChecked);
         });
+        if (typeof tasklist_check_click === "function") {
+            tasklist_check_click();
+        }
         updateTaskSelectionControls();
       });
 
