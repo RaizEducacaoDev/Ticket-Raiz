@@ -52,14 +52,85 @@ function reconcileTaskSelectionIds(selectionState, visibleIds) {
   return normalizedVisibleIds.filter((id) => selectionState.has(id));
 }
 
+function resolveZeevUserId(candidates = []) {
+  for (const candidate of candidates) {
+    const match = String(candidate ?? "").match(/(\d+)$/);
+    if (match) return Number(match[1]);
+  }
+
+  return null;
+}
+
+function getCurrentZeevUserId() {
+  return resolveZeevUserId([
+    jq("#userId").val(),
+    jq(".menu-user .user[userid]").first().attr("userid"),
+    jq(".user[userid]").first().attr("userid")
+  ]);
+}
+
+function escapeTaskMessage(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function showTaskModal(title, message, callback) {
+  if (typeof mostrarModal === "function") {
+    mostrarModal(title, message, callback);
+    return;
+  }
+
+  jq("#modalOverlay, #colorbox").remove();
+  jq("body").append(`
+    <div id="modalOverlay" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 89 !important;"></div>
+    <div id="colorbox" role="dialog" tabindex="-1" style="display: block; visibility: visible; top: 50%; left: 50%; transform: translate(-50%, -50%); position: fixed; width: min(480px, calc(100vw - 32px)); background: white; z-index: 90 !important; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); padding: 16px;">
+      <h2 style="margin: 0 0 12px; text-align: center; font-size: 18px;">${escapeTaskMessage(title)}</h2>
+      <div style="max-height: 55vh; overflow-y: auto;">${message}</div>
+      <div style="margin-top: 16px; text-align: center;">
+        <button type="button" class="btn btn-success close-task-modal-btn">OK</button>
+      </div>
+    </div>
+  `);
+
+  jq(".close-task-modal-btn").off("click").on("click", function () {
+    jq("#modalOverlay, #colorbox").remove();
+    if (typeof callback === "function") callback();
+  });
+}
+
+function extractMovementError(error) {
+  const apiMessage = error?.responseJSON?.error?.message
+    || error?.responseJSON?.message
+    || error?.responseText
+    || error?.message;
+
+  if (apiMessage) {
+    if (typeof apiMessage === "string") {
+      try {
+        const parsed = JSON.parse(apiMessage);
+        return parsed?.error?.message || parsed?.message || apiMessage;
+      } catch (_) {
+        return apiMessage;
+      }
+    }
+
+    return String(apiMessage);
+  }
+
+  return error?.status ? `Erro HTTP ${error.status}.` : "Erro inesperado ao movimentar a tarefa.";
+}
+
 if (typeof jq !== "undefined") {
   jq(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
   const taskSelectionState = createTaskSelectionState();
   const aprovadores = [1890, 1885, 1894, 4130, 1959, 1897, 5240, 1888, 4101, 7148];
-  const usuarioMatch = String(jq("#userId").val() || "").match(/(\d+)$/);
-  const usuarioLogado = usuarioMatch ? Number(usuarioMatch[1]) : null;
+  const usuarioLogado = getCurrentZeevUserId();
   const podeAprovarEmMassa = aprovadores.includes(usuarioLogado);
   let taskSelectionSyncTimer = null;
 
@@ -350,7 +421,7 @@ async function movimentaTarefas(decisao) {
     const totalTasks = tasks.length;
 
     if (totalTasks === 0) {
-      mostrarModal(
+      showTaskModal(
         "Atenção!",
         "Nenhuma tarefa está selecionada.<br><br>Marque ao menos uma tarefa antes de executar a aprovação."
       );
@@ -370,7 +441,10 @@ async function movimentaTarefas(decisao) {
     const token = await buscaToken();
 
     if (!token) {
-      failedTasks = tasks.map((task) => task.taskId);
+      failedTasks = tasks.map((task) => ({
+        taskId: task.taskId,
+        error: "Não foi possível autenticar o usuário no Zeev."
+      }));
       processedCount = totalTasks;
       jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
     } else {
@@ -380,10 +454,10 @@ async function movimentaTarefas(decisao) {
         const reason = decisao ? "Aprovado" : "Reprovado";
         const response = await processaMovimentacao(task.taskNumber, result, reason, token);
 
-        if (response !== null) {
+        if (response.success) {
           successTasks.push(task.taskId);
         } else {
-          failedTasks.push(task.taskId);
+          failedTasks.push({ taskId: task.taskId, error: response.error });
         }
 
         processedCount++;
@@ -393,17 +467,20 @@ async function movimentaTarefas(decisao) {
 
     const successCount = successTasks.length;
     const failureCount = failedTasks.length;
+    const failureDetails = failedTasks.map((failure) => (
+      `<strong>${escapeTaskMessage(failure.taskId)}</strong>: ${escapeTaskMessage(failure.error)}`
+    )).join("<br>");
 
     if (successCount > 0 && failureCount === 0) {
-      mostrarModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
+      showTaskModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
     } else if (successCount === 0 && failureCount > 0) {
-      mostrarModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`, function () { window.location.reload(); });
+      showTaskModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`);
     } else if (successCount > 0 && failureCount > 0) {
-      mostrarModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br> Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`, function () { window.location.reload(); });
+      showTaskModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>Por favor entre em contato com o time responsável através do email:<br>ticket.raiz@raizeducacao.com.br`);
     }
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
-    mostrarModal(
+    showTaskModal(
       "Erro!",
       "Não foi possível concluir o processamento das tarefas.<br><br>Tente novamente ou entre em contato com o time responsável."
     );
@@ -438,7 +515,7 @@ async function processaMovimentacao(id, result, reason, token) {
       data: JSON.stringify(createAssignmentPayload(result, reason))
     });
 
-    return response;
+    return { success: true, response };
   } catch (error) {
     console.error(`Erro ao processar tarefa:`, error);
     
@@ -455,14 +532,18 @@ async function processaMovimentacao(id, result, reason, token) {
     if (error.responseJSON) {
       console.log("ResponseJSON:", error.responseJSON);
     }
-    return null;  // Retorna null em caso de erro
+    return {
+      success: false,
+      status: error?.status || null,
+      error: extractMovementError(error)
+    };
   }
 }
 
 async function buscaToken() {
   try {
-    var usuarioLogado = Number(jq("#userId").val().match(/\d+$/)?.[0]);
-    if (isNaN(usuarioLogado)) throw new Error("ID do usuário inválido.");
+    var usuarioLogado = getCurrentZeevUserId();
+    if (!usuarioLogado) throw new Error("ID do usuário inválido.");
 
     var apiUrl = `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/` +
       (window.location.origin.includes('hml')
@@ -577,6 +658,9 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     createTaskSelectionState,
     reconcileTaskSelectionIds,
+    resolveZeevUserId,
+    escapeTaskMessage,
+    extractMovementError,
     createAssignmentPayload,
     movimentaTarefas,
     processaMovimentacao
