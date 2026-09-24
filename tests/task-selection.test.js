@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const {
   createTaskSelectionState,
   reconcileTaskSelectionIds,
+  createAssignmentPayload,
   movimentaTarefas,
   processaMovimentacao
 } = require("../src/js/main.js");
@@ -108,4 +109,45 @@ test("não envia uma movimentação sem token", async () => {
   }
 
   assert.equal(ajaxCalls, 0);
+});
+
+test("monta o contrato de conclusão esperado pela API do Zeev", () => {
+  assert.deepEqual(createAssignmentPayload("1", "Aprovado"), {
+    result: "1",
+    instanceTaskEnvelope: {
+      formFields: [],
+      comments: "Aprovado"
+    }
+  });
+});
+
+test("envia a aprovação com o envelope obrigatório da tarefa", async () => {
+  let request = null;
+
+  global.window = { location: { origin: "https://raizeducacao.zeev.it" } };
+  global.jq = {
+    ajax: async (options) => {
+      request = options;
+      return { success: true };
+    }
+  };
+
+  try {
+    const response = await processaMovimentacao("3256142", "1", "Aprovado", "temporary-token");
+
+    assert.deepEqual(response, { success: true });
+    assert.equal(request.url, "https://raizeducacao.zeev.it/api/2/assignments/3256142");
+    assert.equal(request.method, "PUT");
+    assert.equal(request.headers.Authorization, "Bearer temporary-token");
+    assert.deepEqual(JSON.parse(request.data), {
+      result: "1",
+      instanceTaskEnvelope: {
+        formFields: [],
+        comments: "Aprovado"
+      }
+    });
+  } finally {
+    delete global.jq;
+    delete global.window;
+  }
 });
