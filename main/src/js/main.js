@@ -414,6 +414,16 @@ async function movimentaTarefas(decisao) {
   }
 }
 
+function createAssignmentPayload(result, reason) {
+  return {
+    result: String(result ?? "").trim(),
+    instanceTaskEnvelope: {
+      formFields: [],
+      comments: String(reason ?? "").trim()
+    }
+  };
+}
+
 async function processaMovimentacao(id, result, reason, token) {
   try {
     if (!token) throw new Error("Token de autenticação não encontrado.");
@@ -425,7 +435,7 @@ async function processaMovimentacao(id, result, reason, token) {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      data: JSON.stringify({ result, reason })
+      data: JSON.stringify(createAssignmentPayload(result, reason))
     });
 
     return response;
@@ -567,6 +577,7 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     createTaskSelectionState,
     reconcileTaskSelectionIds,
+    createAssignmentPayload,
     movimentaTarefas,
     processaMovimentacao
   };
