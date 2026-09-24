@@ -6,6 +6,7 @@ const {
   reconcileTaskSelectionIds,
   resolveZeevUserId,
   escapeTaskMessage,
+  createTaskSupportMessage,
   extractMovementError,
   createAssignmentPayload,
   movimentaTarefas,
@@ -180,4 +181,12 @@ test("extrai a mensagem de negócio retornada pela API do Zeev", () => {
 
 test("escapa mensagens da API antes de exibi-las no modal", () => {
   assert.equal(escapeTaskMessage('<script>alert("x")</script>'), "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;");
+});
+
+test("direciona o suporte para o formulário Ticket Raiz", () => {
+  const message = createTaskSupportMessage();
+
+  assert.match(message, /\[Processos\] Solicitações Ticket Raiz/);
+  assert.match(message, /https:\/\/raizeducacao\.zeev\.it\/2\.0\/request\?c=nIGZbj%2BSflQVvsUdA5hVOmC4ZZr8GXW%2FThxNe7g52WrGa4yThcuEkqRqO5VT82klt906ee7Z6xOdQXtaVd20Pg%3D%3D/);
+  assert.doesNotMatch(message, /ticket\.raiz@raizeducacao\.com\.br/);
 });
