@@ -1,6 +1,114 @@
-jq(document).ready(function () {
+function createTaskSelectionState(initialIds = []) {
+  const selectedIds = new Set();
+
+  const normalizeId = (id) => {
+    if (id === null || id === undefined) return "";
+    return String(id).trim();
+  };
+
+  initialIds.forEach((id) => {
+    const normalizedId = normalizeId(id);
+    if (normalizedId) selectedIds.add(normalizedId);
+  });
+
+  return {
+    set(id, selected) {
+      const normalizedId = normalizeId(id);
+      if (!normalizedId) return;
+
+      if (selected) {
+        selectedIds.add(normalizedId);
+      } else {
+        selectedIds.delete(normalizedId);
+      }
+    },
+    has(id) {
+      const normalizedId = normalizeId(id);
+      return normalizedId ? selectedIds.has(normalizedId) : false;
+    },
+    retain(ids) {
+      const retainedIds = new Set(ids.map(normalizeId).filter(Boolean));
+      selectedIds.forEach((id) => {
+        if (!retainedIds.has(id)) selectedIds.delete(id);
+      });
+    },
+    values() {
+      return Array.from(selectedIds);
+    }
+  };
+}
+
+function reconcileTaskSelectionIds(selectionState, visibleIds) {
+  const normalizedVisibleIds = visibleIds
+    .map((id) => id === null || id === undefined ? "" : String(id).trim())
+    .filter(Boolean);
+
+  // Durante o carregamento o Zeev esvazia o tbody antes de inserir as novas
+  // linhas. Preservar o estado nesse intervalo evita perder a seleção.
+  if (normalizedVisibleIds.length > 0) {
+    selectionState.retain(normalizedVisibleIds);
+  }
+
+  return normalizedVisibleIds.filter((id) => selectionState.has(id));
+}
+
+if (typeof jq !== "undefined") {
+  jq(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
+  const taskSelectionState = createTaskSelectionState();
+  const aprovadores = [1890, 1885, 1894, 4130, 1959, 1897, 5240, 1888, 4101, 7148];
+  const usuarioMatch = String(jq("#userId").val() || "").match(/(\d+)$/);
+  const usuarioLogado = usuarioMatch ? Number(usuarioMatch[1]) : null;
+  const podeAprovarEmMassa = aprovadores.includes(usuarioLogado);
+  let taskSelectionSyncTimer = null;
+
+  const getTaskAssignmentId = (checkbox) => {
+    const checkboxValue = jq(checkbox).val();
+    const rowKey = jq(checkbox).closest("tr").data("key");
+    return String(checkboxValue || rowKey || "").trim();
+  };
+
+  const updateTaskSelectionControls = () => {
+    const checkboxes = jq(".task-check-action");
+    const checkedCount = checkboxes.filter(":checked").length;
+    const headerCheckbox = jq("#checkbox-header");
+
+    headerCheckbox.prop("checked", checkboxes.length > 0 && checkedCount === checkboxes.length);
+    headerCheckbox.prop("indeterminate", checkedCount > 0 && checkedCount < checkboxes.length);
+
+    if (podeAprovarEmMassa && checkedCount > 0) {
+      jq("#containerButton").removeClass("d-none");
+    } else {
+      jq("#containerButton").addClass("d-none");
+    }
+  };
+
+  const reconcileTaskSelection = () => {
+    const checkboxes = jq(".task-check-action");
+    const visibleIds = checkboxes.map(function () {
+      return getTaskAssignmentId(this);
+    }).get();
+    const checkedIds = new Set(reconcileTaskSelectionIds(taskSelectionState, visibleIds));
+
+    checkboxes.each(function () {
+      jq(this).prop("checked", checkedIds.has(getTaskAssignmentId(this)));
+    });
+
+    updateTaskSelectionControls();
+  };
+
+  const scheduleTaskSelectionSync = () => {
+    clearTimeout(taskSelectionSyncTimer);
+    taskSelectionSyncTimer = setTimeout(reconcileTaskSelection, 0);
+  };
+
+  const ensureTaskHeaderCheckbox = () => {
+    const tableHeader = jq(".table-hover-pointer thead tr th:first");
+    if (tableHeader.length > 0 && jq("#checkbox-header").length === 0) {
+      tableHeader.html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
+    }
+  };
 
   if (!localStorage.getItem('chkReload')) {
     localStorage.setItem('chkReload', '');
@@ -50,32 +158,29 @@ jq(document).ready(function () {
 
       jq(window).on("resize", applyDNoneForMobile);
 
-      setInterval(function () {
-        var th = jq('.table-hover-pointer thead tr th:first');
-        if (th.length > 0 && jq('#checkbox-header').length === 0) {
-          th.html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
-        }
-      }, 500);
+      ensureTaskHeaderCheckbox();
+      setInterval(ensureTaskHeaderCheckbox, 500);
 
-      var aprovadores = [1890, 1885, 1894, 4130, 1959, 1897,5240,1888,4101,7148] //5240 é o usuário para teste no ambiente de hml
-      var usuarioLogado = parseInt(jq("#userId").val().match(/(\d+)$/))
-
-      jq(document).on('change', '.task-check-action', function () {
-        if (aprovadores.includes(usuarioLogado)) {
-          const isChecked = jq('.task-check-action:checked').length > 0;
-          isChecked ? jq("#containerButton").removeClass("d-none") : jq("#containerButton").addClass("d-none");
-        }
+      jq(document).off("change.ticketRaizTaskSelection", ".task-check-action");
+      jq(document).on("change.ticketRaizTaskSelection", ".task-check-action", function () {
+        taskSelectionState.set(getTaskAssignmentId(this), jq(this).prop("checked"));
+        updateTaskSelectionControls();
       });
 
-      jq(document).on('change', '#checkbox-header', function () {
-        const isChecked = jq(this).prop('checked');
-        jq('.task-check-action').prop('checked', isChecked);
-        if (aprovadores.includes(usuarioLogado)) {
-          jq('.task-check-action:checked').length > 0
-            ? jq("#containerButton").removeClass("d-none")
-            : jq("#containerButton").addClass("d-none");
-        }
+      jq(document).off("change.ticketRaizTaskSelection", "#checkbox-header");
+      jq(document).on("change.ticketRaizTaskSelection", "#checkbox-header", function () {
+        const isChecked = jq(this).prop("checked");
+        jq(".task-check-action").each(function () {
+          jq(this).prop("checked", isChecked);
+          taskSelectionState.set(getTaskAssignmentId(this), isChecked);
+        });
+        updateTaskSelectionControls();
       });
+
+      jq(".task-check-action:checked").each(function () {
+        taskSelectionState.set(getTaskAssignmentId(this), true);
+      });
+      scheduleTaskSelectionSync();
 
       break;
     case `${dominio}/my/services`:
@@ -138,12 +243,10 @@ jq(document).ready(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
 
-            if (jq('#checkbox-header').length === 0) {
-              jq('.table-hover-pointer thead tr th:first')
-                .html('<input type="checkbox" class="checkbox-header" id="checkbox-header">');
-            }
+            ensureTaskHeaderCheckbox();
 
             applyDNoneForMobile();
+            scheduleTaskSelectionSync();
             break;
         }
       }
@@ -153,7 +256,8 @@ jq(document).ready(function () {
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
-});
+  });
+}
 
 function addActionRow() {
   const newRow = `
@@ -229,53 +333,67 @@ async function validaPendencias() {
 
 async function movimentaTarefas(decisao) {
   try {
-    jq(".app-overlay").show();
     let successTasks = [];
     let failedTasks = [];
     let processedCount = 0;
-    
-    const tasks = jq('table tbody tr').map(function () {
-      const checkbox = jq(this).find('.task-check-action');
-      if (checkbox.prop('checked')) {
-        const taskNumber = jq(this).data('key');
-        const taskId = jq(this).find('td.d-none.d-md-table-cell span.badge').text().trim();
-        return { taskNumber, taskId };
-      }
-      return null;
-    }).get().filter(task => task !== null);
+
+    const tasks = jq(".task-check-action:checked").map(function () {
+      const checkbox = jq(this);
+      const row = checkbox.closest("tr");
+      const taskNumber = String(checkbox.val() || row.data("key") || "").trim();
+      const taskId = row.find("td.d-none.d-md-table-cell span.badge").text().trim();
+
+      return taskNumber ? { taskNumber, taskId: taskId || `#${taskNumber}` } : null;
+    }).get().filter(Boolean);
     console.log("Tarefas selecionadas para processamento:", tasks);
-    
+
     const totalTasks = tasks.length;
-    
+
+    if (totalTasks === 0) {
+      mostrarModal(
+        "Atenção!",
+        "Nenhuma tarefa está selecionada.<br><br>Marque ao menos uma tarefa antes de executar a aprovação."
+      );
+      return;
+    }
+
+    jq("#btnApproveTasks, #btnRejectTasks").prop("disabled", true);
+    jq(".app-overlay").show();
+
     jq("body").append(`
       <div id="processingModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; z-index: 100; text-align: center;">
         <p>Processando movimentações...</p>
         <p id="progressCount">0 / ${totalTasks}</p>
       </div>
     `);
-    
-    for (const task of tasks) {
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Delay fixo de 300ms entre cada requisição
-      const result = decisao ? "1" : "2";
-      const reason = decisao ? "Aprovado" : "Reprovado";
-      const response = await processaMovimentacao(task.taskNumber, result, reason);
-      
-      if (response!==null) {
-        successTasks.push(task.taskId);
-      } else {
-        failedTasks.push(task.taskId);
-      }
-      
-      processedCount++;
+
+    const token = await buscaToken();
+
+    if (!token) {
+      failedTasks = tasks.map((task) => task.taskId);
+      processedCount = totalTasks;
       jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
+    } else {
+      for (const task of tasks) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const result = decisao ? "1" : "2";
+        const reason = decisao ? "Aprovado" : "Reprovado";
+        const response = await processaMovimentacao(task.taskNumber, result, reason, token);
+
+        if (response !== null) {
+          successTasks.push(task.taskId);
+        } else {
+          failedTasks.push(task.taskId);
+        }
+
+        processedCount++;
+        jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
+      }
     }
-    
-    jq("#processingModal").remove();
-    jq(".app-overlay").hide();
-    
+
     const successCount = successTasks.length;
     const failureCount = failedTasks.length;
-    
+
     if (successCount > 0 && failureCount === 0) {
       mostrarModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
     } else if (successCount === 0 && failureCount > 0) {
@@ -285,14 +403,20 @@ async function movimentaTarefas(decisao) {
     }
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
+    mostrarModal(
+      "Erro!",
+      "Não foi possível concluir o processamento das tarefas.<br><br>Tente novamente ou entre em contato com o time responsável."
+    );
+  } finally {
     jq(".app-overlay").hide();
     jq("#processingModal").remove();
+    jq("#btnApproveTasks, #btnRejectTasks").prop("disabled", false);
   }
 }
 
-async function processaMovimentacao(id, result, reason) {
+async function processaMovimentacao(id, result, reason, token) {
   try {
-    let token = await buscaToken();  // Aguardar o token antes de enviar a requisição
+    if (!token) throw new Error("Token de autenticação não encontrado.");
 
     const response = await jq.ajax({
       url: `${window.location.origin}/api/2/assignments/${id}`,
@@ -437,4 +561,13 @@ async function verificaAtrasos(dominio) {
   } catch (error) {
     console.error("Erro na requisição:", error);
   }
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    createTaskSelectionState,
+    reconcileTaskSelectionIds,
+    movimentaTarefas,
+    processaMovimentacao
+  };
 }
