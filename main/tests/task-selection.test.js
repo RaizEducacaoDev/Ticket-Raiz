@@ -4,6 +4,9 @@ const assert = require("node:assert/strict");
 const {
   createTaskSelectionState,
   reconcileTaskSelectionIds,
+  resolveZeevUserId,
+  escapeTaskMessage,
+  extractMovementError,
   createAssignmentPayload,
   movimentaTarefas,
   processaMovimentacao
@@ -101,7 +104,8 @@ test("não envia uma movimentação sem token", async () => {
 
   try {
     const response = await processaMovimentacao("3256142", "1", "Aprovado", null);
-    assert.equal(response, null);
+    assert.equal(response.success, false);
+    assert.match(response.error, /Token de autenticação não encontrado/);
   } finally {
     console.error = originalConsoleError;
     console.log = originalConsoleLog;
@@ -135,7 +139,7 @@ test("envia a aprovação com o envelope obrigatório da tarefa", async () => {
   try {
     const response = await processaMovimentacao("3256142", "1", "Aprovado", "temporary-token");
 
-    assert.deepEqual(response, { success: true });
+    assert.deepEqual(response, { success: true, response: { success: true } });
     assert.equal(request.url, "https://raizeducacao.zeev.it/api/2/assignments/3256142");
     assert.equal(request.method, "PUT");
     assert.equal(request.headers.Authorization, "Bearer temporary-token");
@@ -150,4 +154,30 @@ test("envia a aprovação com o envelope obrigatório da tarefa", async () => {
     delete global.jq;
     delete global.window;
   }
+});
+
+test("usa o userid do menu quando o input do Zeev está vazio", () => {
+  assert.equal(resolveZeevUserId(["", "1890"]), 1890);
+  assert.equal(resolveZeevUserId(["user-7148", "1890"]), 7148);
+  assert.equal(resolveZeevUserId(["", null]), null);
+});
+
+test("extrai a mensagem de negócio retornada pela API do Zeev", () => {
+  const error = {
+    status: 400,
+    responseText: JSON.stringify({
+      error: {
+        message: "Não foi encontrada nenhuma pessoa habilitada para executar a etapa T04."
+      }
+    })
+  };
+
+  assert.equal(
+    extractMovementError(error),
+    "Não foi encontrada nenhuma pessoa habilitada para executar a etapa T04."
+  );
+});
+
+test("escapa mensagens da API antes de exibi-las no modal", () => {
+  assert.equal(escapeTaskMessage('<script>alert("x")</script>'), "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;");
 });
