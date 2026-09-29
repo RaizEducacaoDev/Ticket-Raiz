@@ -225,7 +225,7 @@ if (typeof jq !== "undefined") {
       updatePageTitleAndButton(/Notificações/g, 'Mensagens');
       updatePageTitleAndButton(/notificação/g, 'mensagem');
       break;
-    case `${dominio}/my/tasks`:
+    case `${dominio}/my/tasks-legacy`:
       jq("tr").each(function () {
         jq(this).find("th:first, td:first").removeClass("d-none");
       });
@@ -262,7 +262,7 @@ if (typeof jq !== "undefined") {
       scheduleTaskSelectionSync();
 
       break;
-    case `${dominio}/my/services`:
+    case `${dominio}/my/services-legacy`:
       //verificaAtrasos(dominio);
       break;
   }
@@ -281,7 +281,7 @@ if (typeof jq !== "undefined") {
             updateText('#LkSend', /Enviar notificação/g, 'Enviar mensagem');
             updateText('.modal-header.bg-white h1', /Notificação/g, 'Mensagem');
             break;
-          case `${dominio}/my/services`:
+          case `${dominio}/my/services-legacy`:
             jq(mutation.addedNodes).find('.card-title').each(function () {
               const text = jq(this).text();
               const iconMap = {
@@ -317,7 +317,7 @@ if (typeof jq !== "undefined") {
             jq('.fav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/KzWHSJL9/coracao.png" alt="Ícone de favorito">');
             jq('.unfav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/2jHg6F7L/coracao-3.png" alt="Ícone de favorito">');
             break;
-          case `${dominio}/my/tasks`:
+          case `${dominio}/my/tasks-legacy`:
             jq("tr").each(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
