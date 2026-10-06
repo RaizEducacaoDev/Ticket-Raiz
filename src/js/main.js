@@ -225,7 +225,7 @@ if (typeof jq !== "undefined") {
       updatePageTitleAndButton(/Notificações/g, 'Mensagens');
       updatePageTitleAndButton(/notificação/g, 'mensagem');
       break;
-    case `${dominio}/my/tasks-legacy`:
+    case `${dominio}/my/tasks`:
       jq("tr").each(function () {
         jq(this).find("th:first, td:first").removeClass("d-none");
       });
@@ -317,7 +317,7 @@ if (typeof jq !== "undefined") {
             jq('.fav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/KzWHSJL9/coracao.png" alt="Ícone de favorito">');
             jq('.unfav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/2jHg6F7L/coracao-3.png" alt="Ícone de favorito">');
             break;
-          case `${dominio}/my/tasks-legacy`:
+          case `${dominio}/my/tasks`:
             jq("tr").each(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
             });
