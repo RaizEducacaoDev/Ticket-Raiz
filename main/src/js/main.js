@@ -61,6 +61,10 @@ function resolveZeevUserId(candidates = []) {
   return null;
 }
 
+function isTaskBatchApprover(userId) {
+  return [1890, 1885, 1894, 4130, 1959, 1897, 5240, 1888, 4101, 7148].includes(userId);
+}
+
 function getCurrentZeevUserId() {
   return resolveZeevUserId([
     jq("#userId").val(),
@@ -156,14 +160,13 @@ function extractMovementError(error) {
   return error?.status ? `Erro HTTP ${error.status}.` : "Erro inesperado ao movimentar a tarefa.";
 }
 
-if (typeof jq !== "undefined") {
+if (typeof jq !== "undefined" && (typeof window === "undefined" || window.location.pathname !== "/my/tasks")) {
   jq(document).ready(function () {
   const dominio = window.location.origin;
   const page = window.location.href;
   const taskSelectionState = createTaskSelectionState();
-  const aprovadores = [1890, 1885, 1894, 4130, 1959, 1897, 5240, 1888, 4101, 7148];
   const usuarioLogado = getCurrentZeevUserId();
-  const podeAprovarEmMassa = aprovadores.includes(usuarioLogado);
+  const podeAprovarEmMassa = isTaskBatchApprover(usuarioLogado);
   let taskSelectionSyncTimer = null;
 
   const getTaskAssignmentId = (checkbox) => {
@@ -365,6 +368,209 @@ if (typeof jq !== "undefined") {
 
   observer.observe(document.body, { childList: true, subtree: true });
   });
+}
+
+function getModernSelectedTasks() {
+  const tasks = [];
+  const seenIds = new Set();
+
+  for (const checkbox of document.querySelectorAll("#taskListBody .task-row-checkbox:checked")) {
+    const row = checkbox.closest("tr");
+    const taskNumber = checkbox.dataset.taskId || "";
+    if (!/^\d+$/.test(taskNumber) || row?.dataset.key !== taskNumber || seenIds.has(taskNumber)) {
+      return { tasks: [], error: "A lista de tarefas mudou. Atualize a página e selecione as tarefas novamente." };
+    }
+
+    seenIds.add(taskNumber);
+    tasks.push({
+      taskNumber,
+      taskId: row.querySelector(".task-number")?.textContent.trim() || `#${taskNumber}`,
+      taskUrl: resolveTaskRequestUrl(row.querySelector('a[href*="/2.0/task"]')?.getAttribute("href"))
+    });
+  }
+
+  return { tasks, error: null };
+}
+
+async function getModernZeevSession() {
+  try {
+    const response = await fetch(`${window.location.origin}/api/2/tokens`, {
+      method: "GET",
+      credentials: "include",
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) {
+      return { userId: null, token: null, error: `Não foi possível autenticar no Zeev (HTTP ${response.status}).` };
+    }
+
+    const data = await response.json();
+    const userId = resolveZeevUserId([data?.userId]);
+    const token = typeof data?.temporaryToken === "string" ? data.temporaryToken : null;
+    return {
+      userId,
+      token,
+      error: userId && token ? null : "A sessão do Zeev não retornou usuário e token válidos."
+    };
+  } catch (_) {
+    return { userId: null, token: null, error: "Não foi possível consultar a sessão do Zeev." };
+  }
+}
+
+async function processModernTaskMovement(id, result, reason, token) {
+  if (!token || !/^\d+$/.test(String(id))) {
+    return { success: false, error: "Token ou ID da tarefa inválido. Nenhuma movimentação foi enviada." };
+  }
+
+  try {
+    const response = await fetch(`${window.location.origin}/api/2/assignments/${id}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify(createAssignmentPayload(result, reason))
+    });
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || data?.success === false || data?.error) {
+      return {
+        success: false,
+        uncertain: response.status >= 500,
+        status: response.status,
+        error: extractMovementError(data || { status: response.status })
+      };
+    }
+    if (!data || response.status === 202) {
+      return { success: false, uncertain: true, error: "O Zeev não confirmou a conclusão da tarefa. Confira o estado antes de tentar novamente." };
+    }
+
+    return { success: true, response: data };
+  } catch (error) {
+    return { success: false, uncertain: true, error: extractMovementError(error) };
+  }
+}
+
+function showModernTaskModal(title, message, callback) {
+  document.querySelector("#ticketRaizTaskModal")?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "ticketRaizTaskModal";
+  overlay.style.cssText = "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(12,47,45,.60);z-index:110;";
+  overlay.innerHTML = `
+    <div role="dialog" aria-modal="true" aria-labelledby="ticketRaizTaskModalTitle" style="width:min(760px,100%);max-height:76vh;display:flex;flex-direction:column;background:#fff;color:#203330;border-radius:14px;box-shadow:0 22px 60px rgba(12,47,45,.28);overflow:hidden;">
+      <div style="padding:20px 24px 16px;border-bottom:3px solid #f08700;background:#eaf7f5;">
+        <h2 id="ticketRaizTaskModalTitle" style="margin:0;font-size:20px;color:#174e4a;">${escapeTaskMessage(title)}</h2>
+      </div>
+      <div style="padding:20px 24px;overflow:auto;overflow-wrap:anywhere;font-size:14px;line-height:1.5;">${message}</div>
+      <div style="padding:14px 24px;border-top:1px solid #dbeae7;text-align:right;">
+        <button type="button" class="btn btn-success" data-close-task-modal>OK</button>
+      </div>
+    </div>`;
+  document.body.append(overlay);
+  const closeButton = overlay.querySelector("[data-close-task-modal]");
+  closeButton.addEventListener("click", () => {
+    overlay.remove();
+    if (typeof callback === "function") callback();
+  });
+  closeButton.focus();
+}
+
+function showModernTaskProgress(total) {
+  const overlay = document.createElement("div");
+  overlay.id = "ticketRaizTaskProgress";
+  overlay.style.cssText = "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(12,47,45,.25);z-index:100;";
+  overlay.innerHTML = `<div role="status" aria-live="polite" style="width:min(380px,100%);padding:24px;background:#fff;border-top:4px solid #f08700;border-radius:14px;box-shadow:0 20px 50px rgba(12,47,45,.25);">
+    <strong style="display:block;margin-bottom:12px;color:#174e4a;">Processando movimentações...</strong>
+    <p data-current-task>Autenticando...</p><p data-task-count>0 / ${total} concluídas</p>
+  </div>`;
+  document.body.append(overlay);
+  return overlay;
+}
+
+async function initializeModernTaskApproval() {
+  if (document.documentElement.dataset.ticketRaizMassApprovalModern === "1") return;
+  document.documentElement.dataset.ticketRaizMassApprovalModern = "1";
+
+  const initialSession = await getModernZeevSession();
+  if (!initialSession.token || !isTaskBatchApprover(initialSession.userId)) return;
+
+  let busy = false;
+  let syncTimer = null;
+  const syncButton = () => {
+    const actionCell = document.querySelector("#btnForward")?.closest(".crud-list-table-controls-cell");
+    if (!actionCell) return;
+
+    let button = document.querySelector("#btnApproveTasks");
+    if (!button) {
+      button = document.createElement("button");
+      button.id = "btnApproveTasks";
+      button.type = "button";
+      button.className = "btn btn-success btn-sm ms-2";
+      button.textContent = "Aprovar Tarefas";
+      actionCell.append(button);
+      button.addEventListener("click", async () => {
+        if (busy) return;
+        const selection = getModernSelectedTasks();
+        if (selection.error || selection.tasks.length === 0) {
+          showModernTaskModal("Atenção!", escapeTaskMessage(selection.error || "Nenhuma tarefa está selecionada."));
+          return;
+        }
+
+        busy = true;
+        button.disabled = true;
+        const progress = showModernTaskProgress(selection.tasks.length);
+        try {
+          const session = await getModernZeevSession();
+          if (!session.token || session.userId !== initialSession.userId) {
+            showModernTaskModal("Falha na autenticação", escapeTaskMessage(session.error || "O usuário da sessão mudou. Nenhuma tarefa foi enviada."));
+            return;
+          }
+
+          const results = await processTaskBatch(selection.tasks, true, session.token, {
+            processTask: processModernTaskMovement,
+            onTaskStart(task, current, total) {
+              progress.querySelector("[data-current-task]").textContent = `Ticket atual: ${task.taskId} (${current} de ${total})`;
+            },
+            onProgress(processed, total) {
+              progress.querySelector("[data-task-count]").textContent = `${processed} / ${total} concluídas`;
+            }
+          });
+          const summary = buildTaskBatchSummary(results, true);
+          showModernTaskModal(summary.title, summary.message, summary.shouldRefresh ? () => window.location.reload() : null);
+        } catch (error) {
+          showModernTaskModal("Erro!", `${escapeTaskMessage(extractMovementError(error))}<br><br>${createTaskSupportMessage()}`);
+        } finally {
+          progress.remove();
+          busy = false;
+          button.disabled = false;
+          scheduleSync();
+        }
+      });
+    }
+
+    const hasSelection = document.querySelector("#taskListBody .task-row-checkbox:checked") !== null;
+    button.hidden = !hasSelection;
+    button.classList.toggle("d-none", !hasSelection);
+  };
+  const scheduleSync = () => {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(syncButton, 0);
+  };
+
+  document.addEventListener("change", (event) => {
+    if (event.target.matches("#checkAll, .task-row-checkbox")) scheduleSync();
+  });
+  new MutationObserver(scheduleSync).observe(document.body, { childList: true, subtree: true });
+  syncButton();
+}
+
+if (typeof window !== "undefined" && window.location.pathname === "/my/tasks" && typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeModernTaskApproval, { once: true });
+  } else {
+    initializeModernTaskApproval();
+  }
 }
 
 function addActionRow() {
