@@ -78,38 +78,65 @@ function escapeTaskMessage(value) {
     .replace(/'/g, "&#039;");
 }
 
+function resolveTaskRequestUrl(value) {
+  if (!value || typeof window === "undefined" || !window.location?.origin) return "";
+  try {
+    const url = new URL(value, window.location.origin);
+    const isTaskPage = url.pathname === "/2.0/task" || url.pathname.startsWith("/2.0/task/");
+    return url.protocol === "https:" && url.origin === window.location.origin && isTaskPage ? url.href : "";
+  } catch (_) {
+    return "";
+  }
+}
+
 function createTaskSupportMessage() {
   const supportUrl = "https://raizeducacao.zeev.it/2.0/request?c=nIGZbj%2BSflQVvsUdA5hVOmC4ZZr8GXW%2FThxNe7g52WrGa4yThcuEkqRqO5VT82klt906ee7Z6xOdQXtaVd20Pg%3D%3D";
-  return `Para solicitar suporte, acesse <a href="${supportUrl}" target="_blank" rel="noopener noreferrer"><strong>[Processos] Solicitações Ticket Raiz</strong></a>.`;
+  return `Para solicitar suporte, acesse <a href="${supportUrl}" target="_blank" rel="noopener noreferrer" style="color: #855000; text-decoration: underline;"><strong>[Processos] Solicitações Ticket Raiz</strong></a>.`;
+}
+
+function getTaskContentLeft() {
+  if (typeof document === "undefined") return 0;
+  return Math.max(0, document.querySelector("#containerPageContent")?.getBoundingClientRect().left || 0);
 }
 
 function showTaskModal(title, message, callback) {
-  if (typeof mostrarModal === "function") {
-    mostrarModal(title, message, callback);
-    return;
-  }
-
   jq("#modalOverlay, #colorbox").remove();
+  if (typeof window !== "undefined") jq(window).off("resize.ticketRaizResultModal");
+  const contentLeft = getTaskContentLeft();
   jq("body").append(`
-    <div id="modalOverlay" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 89 !important;"></div>
-    <div id="colorbox" role="dialog" tabindex="-1" style="display: block; visibility: visible; top: 50%; left: 50%; transform: translate(-50%, -50%); position: fixed; width: min(480px, calc(100vw - 32px)); background: white; z-index: 90 !important; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); padding: 16px;">
-      <h2 style="margin: 0 0 12px; text-align: center; font-size: 18px;">${escapeTaskMessage(title)}</h2>
-      <div style="max-height: 55vh; overflow-y: auto;">${message}</div>
-      <div style="margin-top: 16px; text-align: center;">
-        <button type="button" class="btn btn-success close-task-modal-btn">OK</button>
+    <div id="modalOverlay" style="position: fixed; top: 0; right: 0; bottom: 0; left: ${contentLeft}px; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; background: rgba(12, 47, 45, 0.60); z-index: 90 !important;">
+    <div id="colorbox" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" tabindex="-1" style="display: flex; flex-direction: column; visibility: visible; position: relative !important; top: auto !important; left: auto !important; transform: none !important; margin: 0 !important; width: min(760px, 100%); max-height: min(76vh, 680px); background: #fff; color: #203330; border: 1px solid #cfe4e1; border-radius: 14px; box-shadow: 0 22px 60px rgba(12, 47, 45, 0.28); overflow: hidden; box-sizing: border-box;">
+      <div style="flex: none; padding: 20px 24px 16px; border-bottom: 3px solid #f08700; background: linear-gradient(105deg, #eaf7f5 0%, #fff6e9 100%);">
+        <div style="color: #286f69; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;">Ticket Raiz · Tarefas</div>
+        <h2 id="task-modal-title" style="margin: 5px 0 0; color: #174e4a; font-size: 20px; font-weight: 700; line-height: 1.3;">${escapeTaskMessage(title)}</h2>
       </div>
+      <div style="min-height: 0; overflow-y: auto; overflow-wrap: anywhere; padding: 20px 24px; font-size: 14px; line-height: 1.5; background: #fff;">${message}</div>
+      <div style="flex: none; padding: 14px 24px; border-top: 1px solid #dbeae7; text-align: right; background: #f7fbfa;">
+        <button type="button" class="btn close-task-modal-btn" style="min-width: 96px; padding: 8px 18px; border: 1px solid #d47900; border-radius: 8px; background: #f08700; color: #203330; font-weight: 700;">OK</button>
+      </div>
+    </div>
     </div>
   `);
 
+  if (typeof window !== "undefined") {
+    jq(window).on("resize.ticketRaizResultModal", function () {
+      jq("#modalOverlay").css("left", `${getTaskContentLeft()}px`);
+    });
+  }
+
   jq(".close-task-modal-btn").off("click").on("click", function () {
+    if (typeof window !== "undefined") jq(window).off("resize.ticketRaizResultModal");
     jq("#modalOverlay, #colorbox").remove();
     if (typeof callback === "function") callback();
   });
+  jq(".close-task-modal-btn").trigger("focus");
 }
 
 function extractMovementError(error) {
   const apiMessage = error?.responseJSON?.error?.message
     || error?.responseJSON?.message
+    || error?.error?.message
+    || (typeof error?.error === "string" ? error.error : null)
     || error?.responseText
     || error?.message;
 
@@ -225,6 +252,7 @@ if (typeof jq !== "undefined") {
       updatePageTitleAndButton(/Notificações/g, 'Mensagens');
       updatePageTitleAndButton(/notificação/g, 'mensagem');
       break;
+    case `${dominio}/my/tasks-legacy`:
     case `${dominio}/my/tasks`:
       jq("tr").each(function () {
         jq(this).find("th:first, td:first").removeClass("d-none");
@@ -317,6 +345,7 @@ if (typeof jq !== "undefined") {
             jq('.fav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/KzWHSJL9/coracao.png" alt="Ícone de favorito">');
             jq('.unfav').html('<img class="ico-no-favorite ico-md" src="https://i.postimg.cc/2jHg6F7L/coracao-3.png" alt="Ícone de favorito">');
             break;
+          case `${dominio}/my/tasks-legacy`:
           case `${dominio}/my/tasks`:
             jq("tr").each(function () {
               jq(this).find("th:first, td:first").removeClass("d-none");
@@ -410,21 +439,150 @@ async function validaPendencias() {
   }
 }
 
+async function processTaskBatch(tasks, decisao, token, options = {}) {
+  const processTask = options.processTask || processaMovimentacao;
+  const wait = options.wait || ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+  const onTaskStart = options.onTaskStart || (() => {});
+  const onProgress = options.onProgress || (() => {});
+  const results = [];
+
+  if (!token) {
+    return tasks.map((task) => ({
+      ...task,
+      status: "failed",
+      error: "Não foi possível autenticar o usuário no Zeev. Nenhuma tarefa foi enviada."
+    }));
+  }
+
+  for (const [index, task] of tasks.entries()) {
+    onTaskStart(task, index + 1, tasks.length);
+    try {
+      await wait(2000);
+      const response = await processTask(
+        task.taskNumber,
+        decisao ? "1" : "2",
+        decisao ? "Aprovado" : "Reprovado",
+        token
+      );
+
+      results.push({
+        ...task,
+        status: response?.success ? "success" : response?.uncertain ? "uncertain" : "failed",
+        error: response?.error || "Falha sem detalhes retornados pela API."
+      });
+    } catch (error) {
+      results.push({
+        ...task,
+        status: "uncertain",
+        error: extractMovementError(error)
+      });
+    }
+
+    onProgress(results.length, tasks.length);
+  }
+
+  return results;
+}
+
+function formatTaskErrorForDisplay(error) {
+  const message = String(error ?? "");
+  const invalidApproval = /resultado de ação\s*["“”']?1["“”']?\s*não condiz com nenhum botão previsto na configuração/i.test(message);
+  const completionExpected = /resultados esperados são:\s*["“”']?3(?!\d)["“”']?/i.test(message);
+  if (invalidApproval && completionExpected) {
+    return "A ação informada não é válida para a etapa atual do processo."
+      + "Neste momento, a tarefa está em uma etapa de conclusão, e não de aprovação.";
+  }
+  return message;
+}
+
+function buildTaskBatchSummary(results, decisao) {
+  const successful = results.filter((result) => result.status === "success");
+  const failed = results.filter((result) => result.status === "failed");
+  const uncertain = results.filter((result) => result.status === "uncertain");
+  const actionLabel = decisao ? "aprovadas" : "reprovadas";
+  const statusCard = (count, label, color, background, border) => (
+    `<div style="padding: 14px 16px; border: 1px solid ${border}; border-radius: 10px; background: ${background}; color: ${color};">`
+    + `<strong style="display: block; font-size: 26px; line-height: 1.1;">${count}</strong>`
+    + `<span style="display: block; margin-top: 5px; font-size: 13px; font-weight: 600;">${label}</span></div>`
+  );
+  const renderTaskNumber = (item, style) => {
+    const number = escapeTaskMessage(item.taskId);
+    const url = resolveTaskRequestUrl(item.taskUrl);
+    return url
+      ? `<a href="${escapeTaskMessage(url)}" target="_blank" rel="noopener noreferrer" aria-label="Abrir solicitação ${number} em nova aba" style="${style} text-decoration: underline; text-underline-offset: 2px;">${number}</a>`
+      : `<span style="${style}">${number}</span>`;
+  };
+  const renderItems = (items, color, background, border, displayError = (item) => item.error) => items.map((item) => (
+    `<div style="padding: 12px 14px; border: 1px solid ${border}; border-left: 3px solid ${color}; border-radius: 8px; background: ${background};">`
+    + `<strong style="display: block; margin-bottom: 4px;">${renderTaskNumber(item, `color: ${color};`)}</strong>`
+    + `<div style="white-space: pre-wrap; overflow-wrap: anywhere;">${escapeTaskMessage(displayError(item))}</div></div>`
+  )).join("");
+  const failedGroups = Array.from(failed.reduce((groups, item) => {
+    const error = formatTaskErrorForDisplay(item.error);
+    if (!groups.has(error)) groups.set(error, { error, tasks: [] });
+    groups.get(error).tasks.push(item);
+    return groups;
+  }, new Map()).values()).sort((a, b) => b.tasks.length - a.tasks.length);
+  const renderTaskIds = (items) => `<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">${items.map((item) => (
+    renderTaskNumber(item, "display: inline-block; padding: 3px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: 12px; font-weight: 700;")
+  )).join("")}</div>`;
+  const renderFailedGroup = (group) => {
+    return `<div style="padding: 12px 14px; border: 1px solid #fee2e2; border-left: 3px solid #b91c1c; border-radius: 8px; background: #fffafa;">`
+      + `<strong style="display: block; margin-bottom: 5px; color: #991b1b;">${group.tasks.length === 1 ? renderTaskNumber(group.tasks[0], "color: #991b1b;") : `${group.tasks.length} tarefas com o mesmo motivo`}</strong>`
+      + `<div style="white-space: pre-wrap; overflow-wrap: anywhere;">${escapeTaskMessage(group.error)}</div>`
+      + (group.tasks.length > 1 ? `<details style="margin-top: 10px;"><summary style="cursor: pointer; color: #991b1b; font-weight: 700;">Ver ${group.tasks.length} tickets</summary>${renderTaskIds(group.tasks)}</details>` : "")
+      + `</div>`;
+  };
+  let message = `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 10px; margin-bottom: 22px;" aria-label="Resumo de ${results.length} ${results.length === 1 ? "tarefa" : "tarefas"}">`
+    + statusCard(successful.length, `Tarefas ${actionLabel}`, "#17635e", "#eaf7f5", "#a8dad4")
+    + statusCard(failed.length, "Com erro", "#b91c1c", "#fef2f2", "#fecaca")
+    + statusCard(uncertain.length, "N\u00e3o confirmadas", "#8a4e00", "#fff4e6", "#f3c48b")
+    + `</div>`;
+
+  if (successful.length > 0) {
+    message += `<details style="margin-bottom: 22px; padding: 12px 14px; border: 1px solid #b8dfda; border-radius: 8px; background: #f3faf9;">`
+      + `<summary style="cursor: pointer; color: #17635e; font-weight: 700;">Ver ${successful.length} ${successful.length === 1 ? "tarefa" : "tarefas"} ${actionLabel}</summary>`
+      + `<div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px;">`
+      + successful.map((task) => renderTaskNumber(task, "display: inline-block; padding: 4px 9px; border-radius: 999px; background: #d8f1ee; color: #17635e; font-weight: 600;")).join("")
+      + `</div></details>`;
+  }
+  if (failed.length > 0) {
+    const extraGroups = failedGroups.slice(3);
+    const extraTaskCount = extraGroups.reduce((total, group) => total + group.tasks.length, 0);
+    message += `<section aria-label="Erros por tarefa" style="margin-bottom: 22px;">`
+      + `<h3 style="margin: 0 0 10px; color: #991b1b; font-size: 15px; font-weight: 700;">Erros por tarefa <span style="font-size: 12px; font-weight: 600;">(${failed.length})</span></h3>`
+      + `<div style="display: grid; gap: 9px;">${failedGroups.slice(0, 3).map(renderFailedGroup).join("")}</div>`
+      + (extraGroups.length > 0 ? `<details style="margin-top: 10px; padding: 11px 14px; border: 1px solid #fee2e2; border-radius: 8px;"><summary style="cursor: pointer; color: #991b1b; font-weight: 700;">Ver outros ${extraGroups.length} motivos (${extraTaskCount} tarefas)</summary><div style="display: grid; gap: 9px; margin-top: 10px;">${extraGroups.map(renderFailedGroup).join("")}</div></details>` : "")
+      + `</section>`;
+  }
+  if (uncertain.length > 0) {
+    message += `<section aria-label="Resultado n\u00e3o confirmado" style="margin-bottom: 22px;">`
+      + `<h3 style="margin: 0 0 6px; color: #8a4e00; font-size: 15px; font-weight: 700;">Resultado n\u00e3o confirmado</h3>`
+      + `<p style="margin: 0 0 10px; color: #714400;">Confira o estado destas tarefas antes de tentar novamente.</p>`
+      + `<div style="display: grid; gap: 9px;">${renderItems(uncertain, "#8a4e00", "#fff9f0", "#f3c48b")}</div></section>`;
+  }
+  if (failed.length > 0 || uncertain.length > 0) {
+    message += `<div style="padding-top: 14px; border-top: 1px solid #dbeae7; color: #45615e; font-size: 13px;">${createTaskSupportMessage()}</div>`;
+  }
+
+  const title = failed.length > 0 || uncertain.length > 0
+    ? successful.length > 0 ? "Conclu\u00eddo com ressalvas" : "N\u00e3o conclu\u00eddo"
+    : "Sucesso!";
+  return { title, message, shouldRefresh: successful.length > 0 || uncertain.length > 0 };
+}
+
 async function movimentaTarefas(decisao) {
   try {
-    let successTasks = [];
-    let failedTasks = [];
-    let processedCount = 0;
-
     const tasks = jq(".task-check-action:checked").map(function () {
       const checkbox = jq(this);
       const row = checkbox.closest("tr");
       const taskNumber = String(checkbox.val() || row.data("key") || "").trim();
       const taskId = row.find("td.d-none.d-md-table-cell span.badge").text().trim();
+      const taskUrl = resolveTaskRequestUrl(row.attr("data-href"));
 
-      return taskNumber ? { taskNumber, taskId: taskId || `#${taskNumber}` } : null;
+      return taskNumber ? { taskNumber, taskId: taskId || `#${taskNumber}`, taskUrl } : null;
     }).get().filter(Boolean);
-    console.log("Tarefas selecionadas para processamento:", tasks);
+    console.log("Tarefas selecionadas para processamento:", tasks.map(({ taskNumber, taskId }) => ({ taskNumber, taskId })));
 
     const totalTasks = tasks.length;
 
@@ -439,54 +597,49 @@ async function movimentaTarefas(decisao) {
     jq("#btnApproveTasks, #btnRejectTasks").prop("disabled", true);
     jq(".app-overlay").show();
 
+    const contentLeft = getTaskContentLeft();
     jq("body").append(`
-      <div id="processingModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; z-index: 100; text-align: center;">
-        <p>Processando movimentações...</p>
-        <p id="progressCount">0 / ${totalTasks}</p>
+      <div id="processingModal" style="position: fixed; top: 0; right: 0; bottom: 0; left: ${contentLeft}px; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; background: rgba(12, 47, 45, 0.20); z-index: 100;">
+        <div role="status" aria-live="polite" style="width: min(380px, 100%); padding: 24px; box-sizing: border-box; background: #fff; border: 1px solid #cfe4e1; border-top: 4px solid #f08700; border-radius: 14px; box-shadow: 0 20px 50px rgba(12, 47, 45, 0.25); text-align: left;">
+          <div style="color: #286f69; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;">Ticket Raiz · Tarefas</div>
+          <p style="margin: 5px 0 20px; color: #174e4a; font-size: 18px; font-weight: 700; line-height: 1.3;">Processando movimentações...</p>
+          <p id="currentTaskNumber" style="margin: 0 0 14px; color: #174e4a; font-weight: 600; overflow-wrap: anywhere;">Autenticando...</p>
+          <div role="progressbar" aria-label="Progresso do lote" aria-valuemin="0" aria-valuemax="${totalTasks}" aria-valuenow="0" style="height: 8px; overflow: hidden; border-radius: 999px; background: #eaf7f5;">
+            <div id="taskProgressBar" style="width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #7ac5bf, #f08700); transition: width 0.25s ease;"></div>
+          </div>
+          <p id="progressCount" style="margin: 9px 0 0; color: #45615e; font-size: 13px; text-align: right;">0 / ${totalTasks} concluídas</p>
+        </div>
       </div>
     `);
+    if (typeof window !== "undefined") {
+      jq(window).off("resize.ticketRaizProcessingModal").on("resize.ticketRaizProcessingModal", function () {
+        jq("#processingModal").css("left", `${getTaskContentLeft()}px`);
+      });
+    }
 
-    const token = await buscaToken();
+    const authentication = await buscaToken();
+    if (!authentication.token) {
+      showTaskModal("Falha na autenticação", `<p>${escapeTaskMessage(authentication.error)}</p>`);
+      return;
+    }
 
-    if (!token) {
-      failedTasks = tasks.map((task) => ({
-        taskId: task.taskId,
-        error: "Não foi possível autenticar o usuário no Zeev."
-      }));
-      processedCount = totalTasks;
-      jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
-    } else {
-      for (const task of tasks) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        const result = decisao ? "1" : "2";
-        const reason = decisao ? "Aprovado" : "Reprovado";
-        const response = await processaMovimentacao(task.taskNumber, result, reason, token);
-
-        if (response.success) {
-          successTasks.push(task.taskId);
-        } else {
-          failedTasks.push({ taskId: task.taskId, error: response.error });
-        }
-
-        processedCount++;
-        jq("#progressCount").text(`${processedCount} / ${totalTasks}`);
+    const results = await processTaskBatch(tasks, decisao, authentication.token, {
+      onTaskStart(task, current, total) {
+        jq("#currentTaskNumber").text(`Ticket atual: ${task.taskId} (${current} de ${total})`);
+      },
+      onProgress(processed, total) {
+        jq("#progressCount").text(`${processed} / ${total} concluídas`);
+        jq("#taskProgressBar").css("width", `${Math.round((processed / total) * 100)}%`);
+        jq("#processingModal [role='progressbar']").attr("aria-valuenow", processed);
       }
-    }
+    });
 
-    const successCount = successTasks.length;
-    const failureCount = failedTasks.length;
-    const failureDetails = failedTasks.map((failure) => (
-      `<strong>${escapeTaskMessage(failure.taskId)}</strong>: ${escapeTaskMessage(failure.error)}`
-    )).join("<br>");
-    const supportMessage = createTaskSupportMessage();
-
-    if (successCount > 0 && failureCount === 0) {
-      showTaskModal("Sucesso!", `Todas as tarefas foram movimentadas com sucesso!<br><br> Sucesso em ${successCount} / ${successCount + failureCount} tarefas`, function () { window.location.reload(); });
-    } else if (successCount === 0 && failureCount > 0) {
-      showTaskModal("Erro!", `Nenhuma das tarefas pode ser movimentada!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>${supportMessage}`);
-    } else if (successCount > 0 && failureCount > 0) {
-      showTaskModal("Atenção!", `Falha na movimentação de algumas tarefas!<br>Sucesso em ${successCount} / ${successCount + failureCount} tarefas<br><br>${failureDetails}<br><br>${supportMessage}`);
-    }
+    const summary = buildTaskBatchSummary(results, decisao);
+    showTaskModal(
+      summary.title,
+      summary.message,
+      summary.shouldRefresh ? () => window.location.reload() : null
+    );
   } catch (error) {
     console.error("Erro ao processar tarefa:", error);
     showTaskModal(
@@ -494,6 +647,7 @@ async function movimentaTarefas(decisao) {
       `Não foi possível concluir o processamento das tarefas.<br><br>${createTaskSupportMessage()}`
     );
   } finally {
+    if (typeof window !== "undefined") jq(window).off("resize.ticketRaizProcessingModal");
     jq(".app-overlay").hide();
     jq("#processingModal").remove();
     jq("#btnApproveTasks, #btnRejectTasks").prop("disabled", false);
@@ -524,56 +678,73 @@ async function processaMovimentacao(id, result, reason, token) {
       data: JSON.stringify(createAssignmentPayload(result, reason))
     });
 
+    if (response?.success === false || response?.error) {
+      return { success: false, error: extractMovementError(response) };
+    }
+
     return { success: true, response };
   } catch (error) {
-    console.error(`Erro ao processar tarefa:`, error);
-    
-    // Objeto bruto
-    console.log("Erro bruto:", error);
-
-    // Status HTTP
-    console.log("Status:", error.status);
-
-    // Texto da resposta (string)
-    console.log("ResponseText:", error.responseText);
-
-    // Se o jQuery já tiver parseado o JSON
-    if (error.responseJSON) {
-      console.log("ResponseJSON:", error.responseJSON);
-    }
+    const status = Number(error?.status) || null;
     return {
       success: false,
-      status: error?.status || null,
+      uncertain: status === null || status >= 500,
+      status,
       error: extractMovementError(error)
     };
   }
 }
 
-async function buscaToken() {
-  try {
-    var usuarioLogado = getCurrentZeevUserId();
-    if (!usuarioLogado) throw new Error("ID do usuário inválido.");
+function describeAuthenticationFailure(stage, error) {
+  const status = Number(error?.status);
+  return status > 0 ? `${stage}: HTTP ${status}.` : `${stage}: sem resposta válida.`;
+}
 
-    var apiUrl = `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/` +
+async function buscaToken() {
+  const usuarioLogado = getCurrentZeevUserId();
+  if (!usuarioLogado) {
+    return { token: null, error: "Não foi possível identificar o usuário logado no Zeev. Nenhuma tarefa foi enviada." };
+  }
+
+  const errors = [];
+  try {
+    const currentUser = await jq.ajax({
+      url: `${window.location.origin}/api/2/tokens`,
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (currentUser?.temporaryToken && resolveZeevUserId([currentUser.userId]) === usuarioLogado) {
+      return { token: currentUser.temporaryToken, error: null };
+    }
+    errors.push("Token do usuário atual: resposta sem token válido para o usuário logado.");
+  } catch (error) {
+    errors.push(describeAuthenticationFailure("Token do usuário atual", error));
+  }
+
+  let stage = "Datasource do Zeev";
+  try {
+    const apiUrl = `${window.location.origin}/api/internal/legacy/1.0/datasource/get/1.0/` +
       (window.location.origin.includes('hml')
         ? "yjbbrV4FLfJUDeTgo97d3CmCz9CCIBqtlH2OupdGmAiSrUr8-LKFdChlE37fCDRMhGf@-i0xUw8t9Pl8mXHU6w__"
         : "DDwgBioycx75M0IiEFF-sdk0HwdR17CgcklxG-9Wy5WHeAyX4eV9pCstsjxLBqOYG2SnaXgEA6YhPK1R8LpVdw__"
       );
 
-    var responseToken = await jq.ajax({ url: apiUrl, method: "GET", headers: { "Content-Type": "application/json" } });
+    const responseToken = await jq.ajax({ url: apiUrl, method: "GET", headers: { "Content-Type": "application/json" } });
     const token = responseToken?.success?.[0]?.cod || (() => { throw new Error("Token não encontrado."); })();
 
-    var response = await jq.ajax({
+    stage = "Impersonação do usuário";
+    const response = await jq.ajax({
       url: `${window.location.origin}/api/2/tokens/impersonate/${usuarioLogado}`,
       method: "GET",
       headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
     });
 
-    return response?.impersonate?.temporaryToken || (() => { throw new Error("Token de impersonação não encontrado."); })();
+    const temporaryToken = response?.impersonate?.temporaryToken;
+    if (!temporaryToken) throw new Error("Token de impersonação não encontrado.");
+    return { token: temporaryToken, error: null };
 
   } catch (error) {
-    console.error("Erro ao processar tarefa:", error);
-    return null;
+    errors.push(describeAuthenticationFailure(stage, error));
+    return { token: null, error: `${errors.join(" ")} Nenhuma tarefa foi enviada.` };
   }
 
 }
@@ -672,6 +843,9 @@ if (typeof module !== "undefined" && module.exports) {
     createTaskSupportMessage,
     extractMovementError,
     createAssignmentPayload,
+    processTaskBatch,
+    buildTaskBatchSummary,
+    buscaToken,
     movimentaTarefas,
     processaMovimentacao
   };
